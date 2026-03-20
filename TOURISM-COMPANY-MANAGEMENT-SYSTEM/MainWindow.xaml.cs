@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -19,6 +19,12 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void BtnOpenTour_Click(object sender, RoutedEventArgs e)
+        {
+            // Tải TourView vào ContentControl chính
+            MainContent.Content = new Views.TourView();
         }
     }
 }
