@@ -67,9 +67,10 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                 TxtPrice.Text = selectedTour.PricePerPerson.ToString("G29"); 
                 TxtMaxCapacity.Text = selectedTour.MaxCapacity.ToString();
                 DpDeparture.SelectedDate = selectedTour.DepartureDate.ToDateTime(TimeOnly.MinValue);
+                SetStatusInCombo(selectedTour.Status);
 
-                TxtTourCode.IsEnabled = false;
-                BtnAdd.IsEnabled = false;
+                TxtTourCode.IsEnabled = true;
+                BtnAdd.IsEnabled = true;
                 BtnUpdate.IsEnabled = true;
                 BtnDelete.IsEnabled = true;
             }
@@ -102,8 +103,17 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                 tourToUpdate.TourId = selectedTour.TourId;
                 tourToUpdate.TourCode = selectedTour.TourCode; 
 
-                tourToUpdate.AvailableSlots = selectedTour.AvailableSlots;
-                tourToUpdate.Status = selectedTour.Status;
+                // Recalculate AvailableSlots if MaxCapacity changed
+                if (tourToUpdate.MaxCapacity != selectedTour.MaxCapacity)
+                {
+                    int booked = _tourService.GetTotalBookedSlots(selectedTour.TourId);
+                    tourToUpdate.AvailableSlots = tourToUpdate.MaxCapacity - booked;
+                }
+                else
+                {
+                    tourToUpdate.AvailableSlots = selectedTour.AvailableSlots;
+                }
+
                 tourToUpdate.IsDeleted = selectedTour.IsDeleted;
                 tourToUpdate.CreatedAt = selectedTour.CreatedAt;
 
@@ -182,6 +192,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             TxtPrice.Text = string.Empty;
             TxtMaxCapacity.Text = string.Empty;
             DpDeparture.SelectedDate = null;
+            SetStatusInCombo("Active");
 
             TxtSearchName.Text = string.Empty;
             CboSearchDestination.SelectedIndex = 0;
@@ -222,7 +233,32 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             else
                 tour.DepartureDate = DateOnly.FromDateTime(DateTime.Now);
 
+            if (CboStatus.SelectedItem is ComboBoxItem item)
+                tour.Status = item.Content.ToString() ?? "Active";
+            else
+                tour.Status = "Active";
+
             return tour;
+        }
+
+        private void SetStatusInCombo(string status)
+        {
+            foreach (ComboBoxItem item in CboStatus.Items)
+            {
+                if (item.Content.ToString() == status)
+                {
+                    CboStatus.SelectedItem = item;
+                    break;
+                }
+            }
+        }
+        private void BtnManageDestinations_Click(object sender, RoutedEventArgs e)
+        {
+            var mainWindow = Window.GetWindow(this) as MainWindow;
+            if (mainWindow != null)
+            {
+                mainWindow.MainContent.Content = new DestinationView();
+            }
         }
     }
 }

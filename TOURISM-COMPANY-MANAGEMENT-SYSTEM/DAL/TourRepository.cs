@@ -87,11 +87,26 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             cmd.ExecuteNonQuery();
         }
 
+        public void UpdateStatus(int tourId, string status)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
+            var sql = "UPDATE Tours SET Status=@Status, UpdatedAt=@Updated WHERE TourId=@Id";
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Id", tourId);
+            cmd.Parameters.AddWithValue("@Status", status);
+            cmd.Parameters.AddWithValue("@Updated", DateTime.Now);
+            cmd.ExecuteNonQuery();
+        }
+
         public Tour? GetById(int tourId)
         {
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
-            var sql = "SELECT * FROM Tours WHERE TourId = @Id AND IsDeleted = 0";
+            var sql = @"SELECT T.*, D.Name AS DestinationName 
+                        FROM Tours T 
+                        LEFT JOIN Destinations D ON T.DestinationId = D.DestinationId 
+                        WHERE T.TourId = @Id AND T.IsDeleted = 0";
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Id", tourId);
             using var reader = cmd.ExecuteReader();
@@ -103,7 +118,11 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             var list = new List<Tour>();
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
-            var sql = "SELECT * FROM Tours WHERE IsDeleted = 0 ORDER BY CreatedAt DESC";
+            var sql = @"SELECT T.*, D.Name AS DestinationName 
+                        FROM Tours T 
+                        LEFT JOIN Destinations D ON T.DestinationId = D.DestinationId 
+                        WHERE T.IsDeleted = 0 
+                        ORDER BY T.CreatedAt DESC";
             using var cmd = new SqlCommand(sql, conn);
             using var reader = cmd.ExecuteReader();
             while (reader.Read()) list.Add(MapToTour(reader));
@@ -116,12 +135,15 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
             
-            var sql = "SELECT * FROM Tours WHERE IsDeleted = 0";
-            if (!string.IsNullOrEmpty(name)) sql += " AND TourName LIKE @Name";
-            if (destId.HasValue) sql += " AND DestinationId = @DestId";
-            if (minPrice.HasValue) sql += " AND PricePerPerson >= @MinPrice";
-            if (maxPrice.HasValue) sql += " AND PricePerPerson <= @MaxPrice";
-            sql += " ORDER BY CreatedAt DESC";
+            var sql = @"SELECT T.*, D.Name AS DestinationName 
+                        FROM Tours T 
+                        LEFT JOIN Destinations D ON T.DestinationId = D.DestinationId 
+                        WHERE T.IsDeleted = 0";
+            if (!string.IsNullOrEmpty(name)) sql += " AND T.TourName LIKE @Name";
+            if (destId.HasValue) sql += " AND T.DestinationId = @DestId";
+            if (minPrice.HasValue) sql += " AND T.PricePerPerson >= @MinPrice";
+            if (maxPrice.HasValue) sql += " AND T.PricePerPerson <= @MaxPrice";
+            sql += " ORDER BY T.CreatedAt DESC";
 
             using var cmd = new SqlCommand(sql, conn);
             if (!string.IsNullOrEmpty(name)) cmd.Parameters.AddWithValue("@Name", $"%{name}%");
@@ -138,7 +160,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
         {
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
-            var sql = "SELECT COUNT(1) FROM Tours WHERE TourCode = @Code AND IsDeleted = 0";
+            var sql = "SELECT COUNT(1) FROM Tours WHERE TourCode = @Code";
             if (excludeId.HasValue) sql += " AND TourId != @Id";
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Code", code ?? string.Empty);
@@ -210,6 +232,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
                 AvailableSlots = (int)reader["AvailableSlots"],
                 DepartureDate = DateOnly.FromDateTime((DateTime)reader["DepartureDate"]),
                 Status = reader["Status"].ToString() ?? "Active",
+                DestinationName = reader["DestinationName"] != DBNull.Value ? reader["DestinationName"].ToString() : "N/A"
             };
 
             if (reader["ReturnDate"] != DBNull.Value) 

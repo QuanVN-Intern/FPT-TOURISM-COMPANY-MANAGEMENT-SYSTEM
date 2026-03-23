@@ -16,7 +16,14 @@
         <!-- ================= SEARCH REGION ================= -->
         <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15" BorderBrush="#E0E6ED" BorderThickness="1">
             <StackPanel>
-                <TextBlock Text="✈ TOUR MANAGEMENT LIST" FontSize="22" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="✈ TOUR MANAGEMENT LIST" FontSize="22" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
+                    <Button x:Name="BtnManageDestinations" Grid.Column="1" Content="📍 Manage Destinations" Width="180" Height="32" Background="#8E44AD" Foreground="White" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" Click="BtnManageDestinations_Click"/>
+                </Grid>
                 
                 <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <StackPanel Margin="0,0,15,10">
@@ -70,22 +77,23 @@
                     </DataGrid.Resources>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Code" Binding="{Binding TourCode}" Width="*" MinWidth="70"/>
-                        <DataGridTextColumn Header="Tour Name" Binding="{Binding TourName}" Width="2*"/>
-                        <DataGridTextColumn Header="Dest (ID)" Binding="{Binding DestinationId}" Width="*" MinWidth="90"/>
+                        <DataGridTextColumn Header="Tour Name" Binding="{Binding TourName}" Width="3*"/>
+                        <DataGridTextColumn Header="Destination" Binding="{Binding DestinationName}" Width="2*" MinWidth="120"/>
                         <DataGridTextColumn Header="Price" Binding="{Binding PricePerPerson}" Width="*" MinWidth="100"/>
                         <DataGridTextColumn Header="Days" Binding="{Binding DurationDays}" Width="*" MinWidth="80"/>
                         
                         <DataGridTextColumn Header="Slot" Width="*" MinWidth="100">
                             <DataGridTextColumn.Binding>
                                 <MultiBinding StringFormat="{}{0} / {1}">
-                                    <Binding Path="AvailableSlots"/>
+                                    <Binding Path="BookedSlots"/>
                                     <Binding Path="MaxCapacity"/>
                                 </MultiBinding>
                             </DataGridTextColumn.Binding>
                         </DataGridTextColumn>
                         
                         <DataGridTextColumn Header="Departure" Binding="{Binding DepartureDate, StringFormat=dd/MM/yyyy}" Width="*" MinWidth="100"/>
-                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*" MinWidth="80"/>
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*" MinWidth="100"/>
+
                     </DataGrid.Columns>
                 </DataGrid>
             </Border>
@@ -117,7 +125,15 @@
                         <TextBox x:Name="TxtMaxCapacity" Height="30" Padding="5" Margin="0,0,0,15"/>
                         
                         <TextBlock Text="Departure Date" Foreground="#7F8C8D" Margin="0,0,0,5"/>
-                        <DatePicker x:Name="DpDeparture" Height="30" Padding="5" Margin="0,0,0,25"/>
+                        <DatePicker x:Name="DpDeparture" Height="30" Padding="5" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Status" Foreground="#7F8C8D" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="CboStatus" Height="30" Padding="5" Margin="0,0,0,25">
+                            <ComboBoxItem Content="Active"/>
+                            <ComboBoxItem Content="Inactive"/>
+                            <ComboBoxItem Content="Completed"/>
+                            <ComboBoxItem Content="Cancelled"/>
+                        </ComboBox>
 
                         <!-- Action Buttons -->
                         <Grid Margin="0,0,0,10">
