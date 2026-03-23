@@ -60,24 +60,12 @@
             </Border>
         </UniformGrid>
 
-        <Grid Grid.Row="2" Margin="0,0,0,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="10" Margin="0,0,10,0" BorderBrush="#E0E6ED" BorderThickness="1">
-                <Grid>
-                    <TextBlock x:Name="TxtPrimaryChartTitle" Text="Primary Chart" FontWeight="SemiBold" Margin="5"/>
-                    <oxy:PlotView x:Name="PrimaryPlot" Margin="0,30,0,0"/>
-                </Grid>
-            </Border>
-            <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="10" BorderBrush="#E0E6ED" BorderThickness="1">
-                <Grid>
-                    <TextBlock x:Name="TxtSecondaryChartTitle" Text="Secondary Chart" FontWeight="SemiBold" Margin="5"/>
-                    <oxy:PlotView x:Name="SecondaryPlot" Margin="0,30,0,0"/>
-                </Grid>
-            </Border>
-        </Grid>
+        <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="10" Margin="0,0,0,10" BorderBrush="#E0E6ED" BorderThickness="1">
+            <Grid>
+                <TextBlock x:Name="TxtPrimaryChartTitle" Text="Chart" FontWeight="SemiBold" Margin="5"/>
+                <oxy:PlotView x:Name="PrimaryPlot" Margin="0,30,0,0"/>
+            </Grid>
+        </Border>
 
         <Border Grid.Row="3" Background="White" CornerRadius="8" Padding="10" BorderBrush="#E0E6ED" BorderThickness="1">
             <DataGrid x:Name="DataGridStatistics"

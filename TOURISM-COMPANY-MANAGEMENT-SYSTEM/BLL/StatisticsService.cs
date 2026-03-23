@@ -45,11 +45,14 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
             var table = viewMode == "By Tour"
                 ? _repository.GetRevenueByTour(from, to)
                 : _repository.GetRevenueByMonth(from, to);
+            var totalRevenue = _repository.GetTotalRevenue(from, to);
+            var totalBookings = _repository.GetTotalBookings(from, to);
+            var avgOrderValue = totalBookings == 0 ? 0 : totalRevenue / totalBookings;
 
             var cards = new List<SummaryCard>
             {
-                new SummaryCard { Title = "Total Revenue", Value = _repository.GetTotalRevenue(from, to).ToString("C0", CultureInfo.CurrentCulture) },
-                new SummaryCard { Title = "Rows", Value = table.Rows.Count.ToString() }
+                new SummaryCard { Title = "Total Revenue", Value = totalRevenue.ToString("C0", CultureInfo.CurrentCulture) },
+                new SummaryCard { Title = "Avg Booking Value", Value = avgOrderValue.ToString("C0", CultureInfo.CurrentCulture) }
             };
 
             return new StatisticsDataset
@@ -66,10 +69,13 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
         {
             var statusTable = _repository.GetBookingByStatus(from, to);
             var timeTable = _repository.GetBookingByMonth(from, to);
+            var totalBookings = _repository.GetTotalBookings(from, to);
+            var confirmedBookings = SumByStatus(statusTable, "Confirmed");
+            var confirmedRate = totalBookings == 0 ? 0 : (confirmedBookings * 100.0 / totalBookings);
             var cards = new List<SummaryCard>
             {
-                new SummaryCard { Title = "Total Bookings", Value = _repository.GetTotalBookings(from, to).ToString() },
-                new SummaryCard { Title = "Status Types", Value = statusTable.Rows.Count.ToString() }
+                new SummaryCard { Title = "Total Bookings", Value = totalBookings.ToString() },
+                new SummaryCard { Title = "Confirmed Rate", Value = $"{confirmedRate:0.##}%" }
             };
 
             if (viewMode == "By Time")
@@ -78,12 +84,9 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                 {
                     ChartTitle = "Bookings by Time",
                     ChartKind = "Line",
-                    SecondaryChartTitle = "Bookings by Status",
-                    SecondaryChartKind = "Pie",
                     SummaryCards = cards,
                     Table = timeTable,
-                    PrimaryChartPoints = BuildPoints(timeTable, "Month", "Total Bookings"),
-                    SecondaryChartPoints = BuildPoints(statusTable, "Status", "Total Bookings")
+                    PrimaryChartPoints = BuildPoints(timeTable, "Month", "Total Bookings")
                 };
             }
 
@@ -91,12 +94,9 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
             {
                 ChartTitle = "Bookings by Status",
                 ChartKind = "Pie",
-                SecondaryChartTitle = "Bookings by Time",
-                SecondaryChartKind = "Line",
                 SummaryCards = cards,
                 Table = statusTable,
-                PrimaryChartPoints = BuildPoints(statusTable, "Status", "Total Bookings"),
-                SecondaryChartPoints = BuildPoints(timeTable, "Month", "Total Bookings")
+                PrimaryChartPoints = BuildPoints(statusTable, "Status", "Total Bookings")
             };
         }
 
@@ -115,8 +115,8 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                 ChartKind = "Column",
                 SummaryCards = new List<SummaryCard>
                 {
-                    new SummaryCard { Title = "Tours In Table", Value = table.Rows.Count.ToString() },
-                    new SummaryCard { Title = "Top Occupancy", Value = GetMaxValue(table, "Occupancy Rate").ToString("0.##") + "%" }
+                    new SummaryCard { Title = "Top Occupancy", Value = GetMaxValue(table, "Occupancy Rate").ToString("0.##") + "%" },
+                    new SummaryCard { Title = "Average Occupancy", Value = GetAverageValue(table, "Occupancy Rate").ToString("0.##") + "%" }
                 },
                 Table = table,
                 PrimaryChartPoints = BuildPoints(table, "TourName", "Total Customers")
@@ -136,7 +136,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                 SummaryCards = new List<SummaryCard>
                 {
                     new SummaryCard { Title = "Total Customers", Value = _repository.GetTotalCustomers().ToString() },
-                    new SummaryCard { Title = "Top 10 Rows", Value = table.Rows.Count.ToString() }
+                    new SummaryCard { Title = "Top Customer Spending", Value = GetMaxValue(table, "Total Spent").ToString("C0", CultureInfo.CurrentCulture) }
                 },
                 Table = table,
                 PrimaryChartPoints = BuildPoints(table, "CustomerName", viewMode == "By Spending" ? "Total Spent" : "Total Bookings")
@@ -166,6 +166,30 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                 if (value > max) max = value;
             }
             return max;
+        }
+
+        private static decimal GetAverageValue(DataTable table, string colName)
+        {
+            if (table.Rows.Count == 0) return 0;
+            decimal total = 0;
+            foreach (DataRow row in table.Rows)
+            {
+                total += Convert.ToDecimal(row[colName] == DBNull.Value ? 0 : row[colName]);
+            }
+            return total / table.Rows.Count;
+        }
+
+        private static int SumByStatus(DataTable statusTable, string status)
+        {
+            var total = 0;
+            foreach (DataRow row in statusTable.Rows)
+            {
+                if (string.Equals(row["Status"]?.ToString(), status, StringComparison.OrdinalIgnoreCase))
+                {
+                    total += Convert.ToInt32(row["Total Bookings"] == DBNull.Value ? 0 : row["Total Bookings"]);
+                }
+            }
+            return total;
         }
     }
 }

@@ -75,21 +75,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
 
                 DataGridStatistics.ItemsSource = dataset.Table.DefaultView;
                 ApplySummaryCards(dataset.SummaryCards, from, to);
-                RenderChart(dataset.ChartTitle, dataset.ChartKind, dataset.PrimaryChartPoints, true);
-
-                if (dataset.SecondaryChartPoints.Any())
-                {
-                    TxtSecondaryChartTitle.Text = dataset.SecondaryChartTitle ?? "Secondary Chart";
-                    RenderChart(dataset.SecondaryChartTitle ?? "Secondary Chart",
-                        dataset.SecondaryChartKind ?? "Column",
-                        dataset.SecondaryChartPoints,
-                        false);
-                }
-                else
-                {
-                    TxtSecondaryChartTitle.Text = "No secondary chart";
-                    SecondaryPlot.Model = new PlotModel { Title = "No data" };
-                }
+                RenderChart(dataset.ChartTitle, dataset.ChartKind, dataset.PrimaryChartPoints);
             }
             catch (Exception ex)
             {
@@ -97,13 +83,11 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             }
         }
 
-        private void RenderChart(string title, string kind, List<ChartPointDto> points, bool primary)
+        private void RenderChart(string title, string kind, List<ChartPointDto> points)
         {
-            var plot = primary ? PrimaryPlot : SecondaryPlot;
+            var plot = PrimaryPlot;
             var model = new PlotModel { Title = title };
-
-            if (primary) TxtPrimaryChartTitle.Text = title;
-            if (!primary) TxtSecondaryChartTitle.Text = title;
+            TxtPrimaryChartTitle.Text = title;
 
             if (kind == "Pie")
             {
