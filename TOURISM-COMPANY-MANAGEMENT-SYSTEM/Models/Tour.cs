@@ -9,10 +9,12 @@ public partial class Tour
     public string TourCode { get; set; } = null!;
     public string TourName { get; set; } = null!;
     public int DestinationId { get; set; }
+    public string? DestinationName { get; set; }
     public int DurationDays { get; set; }
     public decimal PricePerPerson { get; set; }
     public int MaxCapacity { get; set; }
     public int AvailableSlots { get; set; }
+    public int BookedSlots => MaxCapacity - AvailableSlots;
     public DateOnly DepartureDate { get; set; }
     public DateOnly? ReturnDate { get; set; }
     public string? Description { get; set; }
