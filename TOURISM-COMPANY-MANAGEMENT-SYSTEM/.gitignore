@@ -1,5 +1,16 @@
+<<<<<<< Updated upstream
 .vs/
 bin/
 obj/
 *.user
 *.suo
+=======
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.log
+.DS_Store
+Thumbs.db
+>>>>>>> Stashed changes
