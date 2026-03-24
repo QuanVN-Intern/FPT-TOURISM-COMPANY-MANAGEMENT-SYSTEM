@@ -224,6 +224,20 @@ CREATE INDEX IX_Payments_Date    ON Payments(PaymentDate);
     FOREIGN KEY (VehicleId) REFERENCES Vehicles(VehicleId)
 );
 
+ALTER TABLE Accounts ADD LicenseNumber NVARCHAR(50);
+
+CREATE TABLE TourAssignments (
+    AssignmentId INT PRIMARY KEY IDENTITY(1,1),
+    TourId INT NOT NULL,
+    AccountId INT NOT NULL, -- The Driver
+    VehicleId INT NOT NULL,
+    FOREIGN KEY (TourId) REFERENCES Tours(TourId),
+    FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId),
+    FOREIGN KEY (VehicleId) REFERENCES Vehicles(VehicleId),
+    CONSTRAINT UQ_Tour_Driver UNIQUE (TourId, AccountId) -- Prevent duplicate assignment
+);
+
+
 
 
 
