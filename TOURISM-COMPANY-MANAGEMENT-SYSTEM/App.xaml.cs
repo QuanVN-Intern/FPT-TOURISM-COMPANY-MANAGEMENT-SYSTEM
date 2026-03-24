@@ -1,14 +1,15 @@
-﻿using System.Configuration;
-using System.Data;
-using System.Windows;
+﻿using System.Windows;
+using TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views;
 
 namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+            // Always start at the login screen
+            new LoginWindow().Show();
+        }
     }
-
 }

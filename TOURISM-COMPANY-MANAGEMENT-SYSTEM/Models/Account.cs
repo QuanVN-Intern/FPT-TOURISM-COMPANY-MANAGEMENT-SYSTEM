@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Models;
 
@@ -27,7 +28,12 @@ public partial class Account
 
     public bool IsDeleted { get; set; }
 
+    // Navigation
+    public virtual Role Role { get; set; } = null!;
+
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
-    public virtual Role Role { get; set; } = null!;
+    /// <summary>Populated by JOIN in AccountRepository — not a DB column.</summary>
+    [NotMapped]
+    public string RoleName { get; set; } = string.Empty;
 }

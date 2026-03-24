@@ -13,7 +13,7 @@ public partial class Customer
 
     public string? Email { get; set; }
 
-    public DateOnly? DateOfBirth { get; set; }
+    public DateTime? DateOfBirth { get; set; }
 
     public string? Address { get; set; }
 
@@ -27,5 +27,6 @@ public partial class Customer
 
     public bool IsDeleted { get; set; }
 
+    // Navigation
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 }

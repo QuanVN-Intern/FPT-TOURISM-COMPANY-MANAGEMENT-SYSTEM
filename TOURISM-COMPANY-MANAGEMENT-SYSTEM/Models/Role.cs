@@ -17,6 +17,7 @@ public partial class Role
 
     public bool IsDeleted { get; set; }
 
+    // Navigation
     public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 
     public virtual ICollection<Permission> Permissions { get; set; } = new List<Permission>();
