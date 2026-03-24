@@ -1,39 +1,52 @@
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL;
+using TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views;
 
 namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
             InitializeComponent();
+            Loaded += MainWindow_Loaded;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Show logged-in user info in nav bar
+            if (AuthSession.Current != null)
+                TxtCurrentUser.Text = $"{AuthSession.Current.FullName}  [{AuthSession.Current.RoleName}]";
+
+            // Accounts section is Admin-only — hide button for everyone else
+            BtnOpenAccount.Visibility = AuthSession.CanManageAccounts
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            // Default landing view
+            MainContent.Content = new TourView();
         }
 
         private void BtnOpenTour_Click(object sender, RoutedEventArgs e)
-        {
-            MainContent.Content = new Views.TourView();
-        }
+            => MainContent.Content = new TourView();
 
-        private void BtnOpenBooking_Click(object sender, RoutedEventArgs e)
-        {
-            MainContent.Content = new Views.BookingView();
-        }
+        private void BtnOpenCustomer_Click(object sender, RoutedEventArgs e)
+            => MainContent.Content = new CustomerView();
 
-        private void BtnOpenVehicle_Click(object sender, RoutedEventArgs e)
+        private void BtnOpenAccount_Click(object sender, RoutedEventArgs e)
+            => MainContent.Content = new AccountView();
+
+        private void BtnLogout_Click(object sender, RoutedEventArgs e)
         {
-            MainContent.Content = new Views.VehicleView();
+            var confirm = MessageBox.Show(
+                "Are you sure you want to logout?",
+                "Logout", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            AuthSession.Clear();          // wipe the session
+            new LoginWindow().Show();
+            Close();
         }
     }
 }
