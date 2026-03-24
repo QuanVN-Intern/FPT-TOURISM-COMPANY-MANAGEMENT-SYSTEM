@@ -61,5 +61,8 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM
         {
             MainContent.Content = new StatisticsView();
         }
+
+        private void BtnOpenAssignment_Click(object sender, RoutedEventArgs e)
+            => MainContent.Content = new TourAssignmentView();
     }
 }

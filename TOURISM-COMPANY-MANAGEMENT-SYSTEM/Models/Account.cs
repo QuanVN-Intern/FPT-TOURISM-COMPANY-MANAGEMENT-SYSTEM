@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -27,6 +27,8 @@ public partial class Account
     public DateTime UpdatedAt { get; set; }
 
     public bool IsDeleted { get; set; }
+    
+    public string? LicenseNumber { get; set; }
 
     // Navigation
     public virtual Role Role { get; set; } = null!;

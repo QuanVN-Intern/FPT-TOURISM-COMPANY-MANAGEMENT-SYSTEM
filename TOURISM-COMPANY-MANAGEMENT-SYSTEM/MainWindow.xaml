@@ -36,6 +36,9 @@
                 <Button x:Name="BtnOpenAccount" Content="Accounts" Width="130" Margin="8,10,0,10"
                         Background="#8E44AD" Foreground="White" FontWeight="Bold"
                         BorderThickness="0" Cursor="Hand" Click="BtnOpenAccount_Click"/>
+                <Button Content="Assignments" Width="130" Margin="8,10,0,10"
+                        Background="#2C3E50" Foreground="White" FontWeight="Bold"
+                        BorderThickness="1" BorderBrush="#7F8C8D" Cursor="Hand" Click="BtnOpenAssignment_Click"/>
                 <Button Content="Statistics" Width="130" Margin="8,10,0,10"
                         Background="#16A085" Foreground="White" FontWeight="Bold"
                         BorderThickness="0" Cursor="Hand" Click="BtnOpenStatistics_Click"/>
