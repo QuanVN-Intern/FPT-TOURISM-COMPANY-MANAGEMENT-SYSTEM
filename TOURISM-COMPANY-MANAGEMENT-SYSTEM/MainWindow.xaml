@@ -36,6 +36,9 @@
                 <Button x:Name="BtnOpenAccount" Content="Accounts" Width="130" Margin="8,10,0,10"
                         Background="#8E44AD" Foreground="White" FontWeight="Bold"
                         BorderThickness="0" Cursor="Hand" Click="BtnOpenAccount_Click"/>
+                <Button Content="Statistics" Width="130" Margin="8,10,0,10"
+                        Background="#16A085" Foreground="White" FontWeight="Bold"
+                        BorderThickness="0" Cursor="Hand" Click="BtnOpenStatistics_Click"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal"

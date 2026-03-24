@@ -14,16 +14,16 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // Show logged-in user info in nav bar
+            // Show logged-in user info
             if (AuthSession.Current != null)
                 TxtCurrentUser.Text = $"{AuthSession.Current.FullName}  [{AuthSession.Current.RoleName}]";
 
-            // Accounts section is Admin-only — hide button for everyone else
+            // Hide Accounts nếu không phải admin
             BtnOpenAccount.Visibility = AuthSession.CanManageAccounts
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
-            // Default landing view
+            // Default screen
             MainContent.Content = new TourView();
         }
 
@@ -46,13 +46,20 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM
         {
             var confirm = MessageBox.Show(
                 "Are you sure you want to logout?",
-                "Logout", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                "Logout",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
 
             if (confirm != MessageBoxResult.Yes) return;
 
-            AuthSession.Clear();          // wipe the session
+            AuthSession.Clear(); // clear session
             new LoginWindow().Show();
             Close();
+        }
+
+        private void BtnOpenStatistics_Click(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new StatisticsView();
         }
     }
 }
