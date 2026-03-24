@@ -33,6 +33,7 @@ public partial class TravelCompanyDbContext : DbContext
 
     public virtual DbSet<Tour> Tours { get; set; }
 
+    public virtual DbSet<Vehicle> Vehicles { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlServer(GetConnectionString());
