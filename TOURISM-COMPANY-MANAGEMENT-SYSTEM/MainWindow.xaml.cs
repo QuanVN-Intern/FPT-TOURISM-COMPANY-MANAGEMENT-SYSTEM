@@ -23,8 +23,17 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM
 
         private void BtnOpenTour_Click(object sender, RoutedEventArgs e)
         {
-            // Tải TourView vào ContentControl chính
             MainContent.Content = new Views.TourView();
+        }
+
+        private void BtnOpenBooking_Click(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new Views.BookingView();
+        }
+
+        private void BtnOpenVehicle_Click(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new Views.VehicleView();
         }
     }
 }

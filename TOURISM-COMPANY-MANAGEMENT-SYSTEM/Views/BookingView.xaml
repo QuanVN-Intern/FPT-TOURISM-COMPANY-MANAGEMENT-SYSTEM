@@ -1,0 +1,100 @@
+<UserControl x:Class="TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views.BookingView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1100"
+             Background="#F5F7FA">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header & Search -->
+        <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15" BorderBrush="#E0E6ED" BorderThickness="1">
+            <StackPanel>
+                <TextBlock Text="📅 BOOKING MANAGEMENT" FontSize="22" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
+                <WrapPanel>
+                    <StackPanel Margin="0,0,15,10">
+                        <TextBlock Text="Search (Code/Customer)"/>
+                        <TextBox x:Name="TxtSearch" Width="250" Height="30" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                    <Button x:Name="BtnSearch" Content="Search" Width="90" Height="30" Background="#3498DB" Foreground="White" Margin="0,15,10,10" Click="BtnSearch_Click"/>
+                    <Button x:Name="BtnReset" Content="Reset" Width="90" Height="30" Background="#95A5A6" Foreground="White" Margin="0,15,10,10" Click="BtnReset_Click"/>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Booking List -->
+            <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="10" Margin="0,0,15,0" BorderBrush="#E0E6ED" BorderThickness="1">
+                <DataGrid x:Name="dgBookings" AutoGenerateColumns="False" SelectionMode="Single" IsReadOnly="True" SelectionChanged="dgBookings_SelectionChanged">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Code" Binding="{Binding BookingCode}" Width="100"/>
+                        <DataGridTextColumn Header="Customer" Binding="{Binding Customer.FullName}" Width="*"/>
+                        <DataGridTextColumn Header="Tour" Binding="{Binding Tour.TourName}" Width="*"/>
+                        <DataGridTextColumn Header="Persons" Binding="{Binding NumPersons}" Width="70"/>
+                        <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat={}{0:N0} VNĐ}" Width="120"/>
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <!-- Details Form -->
+            <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="15" BorderBrush="#E0E6ED" BorderThickness="1">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Booking Details" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+                        
+                        <TextBox x:Name="txtId" Visibility="Collapsed"/>
+
+                        <TextBlock Text="Select Customer" Margin="0,5,0,2"/>
+                        <ComboBox x:Name="CbCustomer" DisplayMemberPath="FullName" SelectedValuePath="CustomerId" Height="30" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Select Tour" Margin="0,5,0,2"/>
+                        <ComboBox x:Name="CbTour" DisplayMemberPath="TourName" SelectedValuePath="TourId" Height="30" Margin="0,0,0,10" SelectionChanged="CbTour_SelectionChanged"/>
+
+                        <TextBlock Text="Number of Persons" Margin="0,5,0,2"/>
+                        <TextBox x:Name="TxtNumPersons" Height="30" Margin="0,0,0,10" TextChanged="TxtNumPersons_TextChanged"/>
+
+                        <TextBlock Text="Total Amount" Margin="0,5,0,2"/>
+                        <Border Background="#F9FAFB" Padding="10" Margin="0,0,0,10" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1">
+                            <TextBlock x:Name="TbTotalAmount" Text="0 VNĐ" FontSize="16" FontWeight="Bold" Foreground="#E67E22"/>
+                        </Border>
+
+                        <TextBlock Text="Status" Margin="0,5,0,2"/>
+                        <ComboBox x:Name="CbStatus" Height="30" Margin="0,0,0,10">
+                            <ComboBoxItem Content="Confirmed"/>
+                            <ComboBoxItem Content="Cancelled"/>
+                            <ComboBoxItem Content="Completed"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Notes" Margin="0,5,0,2"/>
+                        <TextBox x:Name="TxtNotes" Height="60" AcceptsReturn="True" Margin="0,0,0,20"/>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="BtnAdd" Grid.Column="0" Content="Create Booking" Height="40" Background="#2ECC71" Foreground="White" FontWeight="Bold" Click="BtnAdd_Click"/>
+                            <Button x:Name="BtnUpdate" Grid.Column="2" Content="Update Status" Height="40" Background="#F1C40F" Foreground="Black" FontWeight="Bold" IsEnabled="False" Click="BtnUpdate_Click"/>
+                        </Grid>
+                        
+                        <Button x:Name="BtnClear" Content="Clear Form" Height="35" Background="#BDC3C7" Margin="0,10,0,0" Click="BtnClear_Click"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
