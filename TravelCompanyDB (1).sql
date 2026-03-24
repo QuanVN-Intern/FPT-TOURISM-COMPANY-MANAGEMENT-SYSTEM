@@ -344,3 +344,29 @@ VALUES
 ('BK002', 2, 2, 3, 3, 16500000, 'Confirmed'),
 ('BK003', 3, 3, 3, 1, 2500000, 'Cancelled'),
 ('BK004', 4, 1, 3, 4, 14000000, 'Confirmed');
+
+-- ============================================
+-- SEED DATA: Test accounts for all roles
+-- Password for all accounts: 123456
+-- SHA-256 hash of '123456'
+-- ============================================
+DECLARE @pwd NVARCHAR(256) = '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92';
+
+-- Update existing seeded accounts to use hashed password
+UPDATE Accounts SET PasswordHash = @pwd WHERE PasswordHash = '123456';
+
+-- Manager
+INSERT INTO Accounts (Username, PasswordHash, FullName, Email, RoleId, IsActive, IsDeleted)
+VALUES ('manager_test', @pwd, 'Mary Manager', 'manager_test@travel.com', 2, 1, 0);
+
+-- Staff
+INSERT INTO Accounts (Username, PasswordHash, FullName, Email, RoleId, IsActive, IsDeleted)
+VALUES ('staff_test', @pwd, 'Steve Staff', 'staff_test@travel.com', 3, 1, 0);
+
+-- Driver
+INSERT INTO Accounts (Username, PasswordHash, FullName, Email, RoleId, IsActive, IsDeleted)
+VALUES ('driver_test', @pwd, 'Dave Driver', 'driver_test@travel.com', 4, 1, 0);
+
+-- Receptionist
+INSERT INTO Accounts (Username, PasswordHash, FullName, Email, RoleId, IsActive, IsDeleted)
+VALUES ('recept_test', @pwd, 'Rachel Recept', 'recept_test@travel.com', 5, 1, 0);
