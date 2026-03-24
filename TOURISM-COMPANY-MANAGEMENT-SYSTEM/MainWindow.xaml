@@ -27,6 +27,12 @@
                 <Button Content="Customers" Width="130" Margin="8,10,0,10"
                         Background="#27AE60" Foreground="White" FontWeight="Bold"
                         BorderThickness="0" Cursor="Hand" Click="BtnOpenCustomer_Click"/>
+                <Button Content="Vehicles" Width="130" Margin="8,10,0,10"
+                        Background="#F39C12" Foreground="White" FontWeight="Bold"
+                        BorderThickness="0" Cursor="Hand" Click="BtnOpenVehicle_Click"/>
+                <Button Content="Bookings" Width="130" Margin="8,10,0,10"
+                        Background="#D35400" Foreground="White" FontWeight="Bold"
+                        BorderThickness="0" Cursor="Hand" Click="BtnOpenBooking_Click"/>
                 <Button x:Name="BtnOpenAccount" Content="Accounts" Width="130" Margin="8,10,0,10"
                         Background="#8E44AD" Foreground="White" FontWeight="Bold"
                         BorderThickness="0" Cursor="Hand" Click="BtnOpenAccount_Click"/>

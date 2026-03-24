@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -34,6 +34,7 @@ public partial class TravelCompanyDbContext : DbContext
     public virtual DbSet<Tour> Tours { get; set; }
 
     public virtual DbSet<Vehicle> Vehicles { get; set; }
+    public virtual DbSet<TourVehicle> TourVehicles { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlServer(GetConnectionString());

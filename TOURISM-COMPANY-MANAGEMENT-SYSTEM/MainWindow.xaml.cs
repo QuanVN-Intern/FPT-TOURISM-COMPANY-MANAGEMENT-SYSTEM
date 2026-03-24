@@ -33,6 +33,12 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM
         private void BtnOpenCustomer_Click(object sender, RoutedEventArgs e)
             => MainContent.Content = new CustomerView();
 
+        private void BtnOpenVehicle_Click(object sender, RoutedEventArgs e)
+            => MainContent.Content = new VehicleView();
+
+        private void BtnOpenBooking_Click(object sender, RoutedEventArgs e)
+            => MainContent.Content = new BookingView();
+
         private void BtnOpenAccount_Click(object sender, RoutedEventArgs e)
             => MainContent.Content = new AccountView();
 
