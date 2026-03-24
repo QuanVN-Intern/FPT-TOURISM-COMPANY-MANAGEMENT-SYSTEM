@@ -66,6 +66,11 @@
                         <TextBlock Text="Number of Persons" Margin="0,5,0,2"/>
                         <TextBox x:Name="TxtNumPersons" Height="30" Margin="0,0,0,10" TextChanged="TxtNumPersons_TextChanged"/>
 
+                        <TextBlock Text="Assigned Vehicles" Margin="0,5,0,2"/>
+                        <Border Background="#F0F3F7" Padding="10" Margin="0,0,0,10" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1">
+                            <TextBlock x:Name="TbAssignedVehicles" Text="Auto-assigned on creation" FontSize="13" Foreground="#2980B9" TextWrapping="Wrap"/>
+                        </Border>
+
                         <TextBlock Text="Total Amount" Margin="0,5,0,2"/>
                         <Border Background="#F9FAFB" Padding="10" Margin="0,0,0,10" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1">
                             <TextBlock x:Name="TbTotalAmount" Text="0 VNĐ" FontSize="16" FontWeight="Bold" Foreground="#E67E22"/>

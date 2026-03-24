@@ -16,7 +16,22 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
         public BookingView()
         {
             InitializeComponent();
+            ApplyPermissions();
             LoadData();
+        }
+
+        private void ApplyPermissions()
+        {
+            
+            bool canUpdate = AuthSession.IsManager;
+            
+           
+            if (!canUpdate)
+            {
+                CbStatus.Visibility = Visibility.Collapsed;
+                BtnUpdate.Visibility = Visibility.Collapsed;
+                
+            }
         }
 
         private void LoadData()
@@ -67,6 +82,12 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
 
                 BtnUpdate.IsEnabled = true;
                 BtnAdd.IsEnabled = false;
+
+                // Disable fields during update - Status only allowed
+                CbCustomer.IsEnabled = false;
+                CbTour.IsEnabled = false;
+                TxtNumPersons.IsEnabled = false;
+                TxtNotes.IsEnabled = false;
             }
         }
 
@@ -79,6 +100,62 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
         private void TxtNumPersons_TextChanged(object sender, TextChangedEventArgs e)
         {
             CalculateTotal();
+            UpdateVehiclePreview();
+        }
+
+        private void UpdateVehiclePreview()
+        {
+            if (int.TryParse(TxtNumPersons.Text, out int num) && num > 0)
+            {
+                var vehicles = _bookingBll.GetAvailableVehicles();
+                if (!vehicles.Any())
+                {
+                    TbAssignedVehicles.Text = "No available vehicles!";
+                    return;
+                }
+
+                int minCap = vehicles.Min(v => v.Capacity);
+                int assignedCapacity = 0;
+                var names = new List<string>();
+
+                // Step 1: Best Single Fit (Gap <= minCap)
+                var bestSingle = vehicles.Where(v => v.Capacity >= num && (v.Capacity - num) <= minCap)
+                                         .OrderBy(v => v.Capacity).FirstOrDefault();
+                if (bestSingle != null)
+                {
+                    names.Add($"{bestSingle.PlateNumber} ({bestSingle.Capacity} seats)");
+                    assignedCapacity = bestSingle.Capacity;
+                }
+                else
+                {
+                    // Step 2: Multiple Selection
+                    var temp = vehicles.OrderByDescending(v => v.Capacity).ToList();
+                    int rem = num;
+                    while (rem > 0 && temp.Any())
+                    {
+                        var v = temp.FirstOrDefault(x => x.Capacity <= rem) ?? temp.OrderBy(x => x.Capacity).First();
+                        names.Add($"{v.PlateNumber} ({v.Capacity} seats)");
+                        assignedCapacity += v.Capacity;
+                        rem -= v.Capacity;
+                        temp.Remove(v);
+                    }
+                }
+
+                if (names.Any())
+                {
+                    TbAssignedVehicles.Text = string.Join(", ", names);
+                    if (assignedCapacity < num)
+                        TbAssignedVehicles.Text += $" (Warning: Not enough capacity! Need {num - assignedCapacity} more)";
+                }
+                else
+                {
+                    TbAssignedVehicles.Text = "No available vehicles found!";
+                }
+            }
+            else
+            {
+                TbAssignedVehicles.Text = "Enter number of persons to see assignment";
+            }
         }
 
         private void CalculateTotal()
@@ -116,7 +193,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                     TourId = (int)CbTour.SelectedValue,
                     NumPersons = num,
                     Notes = TxtNotes.Text.Trim(),
-                    AccountId = 1 // Simplified: Use a default admin account ID
+                    AccountId = AuthSession.Current?.AccountId ?? 1 // Use logged-in user or default
                 };
 
                 _bookingBll.AddBooking(booking);
@@ -165,10 +242,17 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             TxtNotes.Text = string.Empty;
             CbStatus.SelectedIndex = 0;
             TbTotalAmount.Text = "0 VNĐ";
+            TbAssignedVehicles.Text = "Auto-assigned on creation";
             
             BtnUpdate.IsEnabled = false;
             BtnAdd.IsEnabled = true;
             dgBookings.SelectedItem = null;
+
+            // Re-enable fields
+            CbCustomer.IsEnabled = true;
+            CbTour.IsEnabled = true;
+            TxtNumPersons.IsEnabled = true;
+            TxtNotes.IsEnabled = true;
         }
     }
 }

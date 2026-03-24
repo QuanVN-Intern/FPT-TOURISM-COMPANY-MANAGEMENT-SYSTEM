@@ -39,27 +39,59 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                     tour.AvailableSlots -= b.NumPersons;
                     tour.UpdatedAt = DateTime.Now;
 
-                    // 4. Auto-assign Vehicle
-                    var vehicle = _context.Vehicles
-                        .Where(v => v.Status == "Available" && v.Capacity >= b.NumPersons)
+                    // 4. Auto-assign Vehicles (Gap-based Strategy)
+                    var availableVehicles = _context.Vehicles
+                        .Where(v => v.Status == "Available")
+                        .ToList();
+
+                    if (!availableVehicles.Any())
+                        throw new Exception("No available vehicles found!");
+
+                    int minCap = availableVehicles.Min(v => v.Capacity);
+                    int assignedCapacity = 0;
+                    var toAssign = new List<Vehicle>();
+
+                    // Step 1: Best Single Fit (Gap <= minCap)
+                    var bestSingle = availableVehicles
+                        .Where(v => v.Capacity >= b.NumPersons && (v.Capacity - b.NumPersons) <= minCap)
                         .OrderBy(v => v.Capacity)
                         .FirstOrDefault();
 
-                    if (vehicle != null)
+                    if (bestSingle != null)
                     {
-                        // Assign vehicle to tour if not already assigned within this context?
-                        // Actually, the requirement says "auto assign xe". 
-                        // Typically this means creating a TourVehicle entry.
-                        var tourVehicle = new TourVehicle
-                        {
-                            TourId = b.TourId,
-                            VehicleId = vehicle.VehicleId
-                        };
-                        _context.TourVehicles.Add(tourVehicle);
+                        toAssign.Add(bestSingle);
+                        assignedCapacity = bestSingle.Capacity;
+                    }
+                    else
+                    {
+                        // Step 2: Multiple Selection (Minimize waste)
+                        var tempAvailable = availableVehicles.OrderByDescending(v => v.Capacity).ToList();
+                        int remaining = b.NumPersons;
                         
-                        // Update vehicle status? Depends on business rule. 
-                        // Usually vehicle is "Busy" for that tour duration.
-                        vehicle.Status = "Busy";
+                        while (remaining > 0 && tempAvailable.Any())
+                        {
+                            // Pick largest that is <= remaining
+                            var v = tempAvailable.FirstOrDefault(x => x.Capacity <= remaining);
+                            if (v == null)
+                            {
+                                // If none <= remaining, pick smallest to cover the rest
+                                v = tempAvailable.OrderBy(x => x.Capacity).First();
+                            }
+                            
+                            toAssign.Add(v);
+                            assignedCapacity += v.Capacity;
+                            remaining -= v.Capacity;
+                            tempAvailable.Remove(v);
+                        }
+                    }
+
+                    if (assignedCapacity < b.NumPersons)
+                        throw new Exception($"Not enough available capacity. Need: {b.NumPersons}, Available: {assignedCapacity}");
+
+                    foreach (var v in toAssign)
+                    {
+                        _context.TourVehicles.Add(new TourVehicle { TourId = b.TourId, VehicleId = v.VehicleId });
+                        v.Status = "Busy";
                     }
 
                     _context.Bookings.Add(b);
@@ -117,6 +149,11 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
         public List<Tour> GetActiveTours()
         {
             return _context.Tours.Where(t => t.Status == "Active" && !t.IsDeleted).OrderBy(t => t.TourName).ToList();
+        }
+
+        public List<Vehicle> GetAvailableVehicles()
+        {
+            return _context.Vehicles.Where(v => v.Status == "Available").ToList();
         }
     }
 }

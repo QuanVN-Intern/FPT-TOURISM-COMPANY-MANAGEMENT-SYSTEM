@@ -6,6 +6,7 @@
 
 USE master;
 GO
+
 IF DB_ID('TravelCompanyDB') IS NOT NULL DROP DATABASE TravelCompanyDB;
 CREATE DATABASE TravelCompanyDB;
 GO
@@ -370,3 +371,25 @@ VALUES ('driver_test', @pwd, 'Dave Driver', 'driver_test@travel.com', 4, 1, 0);
 -- Receptionist
 INSERT INTO Accounts (Username, PasswordHash, FullName, Email, RoleId, IsActive, IsDeleted)
 VALUES ('recept_test', @pwd, 'Rachel Recept', 'recept_test@travel.com', 5, 1, 0);
+
+INSERT INTO Vehicles (PlateNumber, Capacity, Status, Notes)
+VALUES
+('29A-12345', 4, 'Available', N'Toyota Vios'),
+
+('30A-67890', 7, 'Available', N'Toyota Innova'),
+
+('30B-22222', 16, 'Available', N'Ford Transit'),
+
+('29B-99999', 29, 'Maintenance', N'Hyundai County'),
+
+('30C-55555', 45, 'Available', N'Hyundai Universe'),
+
+('29D-11111', 7, 'Busy', N'Used for HaLong tour'),
+
+('30E-88888', 16, 'Available', N'New vehicle'),
+
+('29F-77777', 4, 'Available', NULL),
+
+('30G-33333', 29, 'Busy', N'Sapa trip'),
+
+('30H-44444', 45, 'Maintenance', N'Engine repair');

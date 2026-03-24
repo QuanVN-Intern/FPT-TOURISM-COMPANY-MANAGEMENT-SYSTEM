@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Models;
 
@@ -9,6 +10,8 @@ public partial class Tour
     public string TourCode { get; set; } = null!;
     public string TourName { get; set; } = null!;
     public int DestinationId { get; set; }
+
+    [NotMapped]
     public string? DestinationName { get; set; }
     public int DurationDays { get; set; }
     public decimal PricePerPerson { get; set; }
