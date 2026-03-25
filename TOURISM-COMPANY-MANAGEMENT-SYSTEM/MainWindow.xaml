@@ -33,6 +33,9 @@
                 <Button Content="Bookings" Width="120" Margin="8,10,0,10"
                         Background="#D35400" Foreground="White" FontWeight="Bold"
                         BorderThickness="0" Cursor="Hand" Click="BtnOpenBooking_Click"/>
+                <!--<Button Content="Payments" Width="120" Margin="8,10,0,10"
+                        Background="#2980B9" Foreground="White" FontWeight="Bold"
+                        BorderThickness="0" Cursor="Hand" Click="BtnOpenPayment_Click"/> -->
                 <Button x:Name="BtnOpenAccount" Content="Accounts" Width="120" Margin="8,10,0,10"
                         Background="#8E44AD" Foreground="White" FontWeight="Bold"
                         BorderThickness="0" Cursor="Hand" Click="BtnOpenAccount_Click"/>

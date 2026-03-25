@@ -38,6 +38,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
         {
             try
             {
+                _bookingBll.AutoReleaseVehicles(); // Check and release old vehicles
                 dgBookings.ItemsSource = _bookingBll.GetAllBookings();
                 CbCustomer.ItemsSource = _bookingBll.GetCustomers();
                 CbTour.ItemsSource = _bookingBll.GetActiveTours();
@@ -67,6 +68,9 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                 txtId.Text = selected.BookingId.ToString();
                 CbCustomer.SelectedValue = selected.CustomerId;
                 CbTour.SelectedValue = selected.TourId;
+                _selectedTour = selected.Tour;
+                UpdateTourDates();
+
                 TxtNumPersons.Text = selected.NumPersons.ToString();
                 TxtNotes.Text = selected.Notes;
                 
@@ -95,6 +99,35 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
         {
             _selectedTour = CbTour.SelectedItem as Tour;
             CalculateTotal();
+            UpdateTourDates();
+        }
+
+        private void UpdateTourDates()
+        {
+            if (_selectedTour != null)
+            {
+                TbDepartureDate.Text = _selectedTour.DepartureDate.ToString("dd/MM/yyyy");
+                TbDepartureDate.Foreground = System.Windows.Media.Brushes.Black;
+
+                if (_selectedTour.ReturnDate.HasValue)
+                {
+                    TbEndDate.Text = _selectedTour.ReturnDate.Value.ToString("dd/MM/yyyy");
+                }
+                else
+                {
+                    // Fallback to duration if return date not set
+                    DateTime endDate = _selectedTour.DepartureDate.ToDateTime(TimeOnly.MinValue).AddDays(_selectedTour.DurationDays);
+                    TbEndDate.Text = endDate.ToString("dd/MM/yyyy");
+                }
+                TbEndDate.Foreground = System.Windows.Media.Brushes.Black;
+            }
+            else
+            {
+                TbDepartureDate.Text = "Select tour";
+                TbDepartureDate.Foreground = System.Windows.Media.Brushes.Gray;
+                TbEndDate.Text = "Select tour";
+                TbEndDate.Foreground = System.Windows.Media.Brushes.Gray;
+            }
         }
 
         private void TxtNumPersons_TextChanged(object sender, TextChangedEventArgs e)
@@ -191,15 +224,17 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                 {
                     CustomerId = (int)CbCustomer.SelectedValue,
                     TourId = (int)CbTour.SelectedValue,
+                    BookingDate = _selectedTour.DepartureDate.ToDateTime(TimeOnly.MinValue),
                     NumPersons = num,
                     Notes = TxtNotes.Text.Trim(),
                     AccountId = AuthSession.Current?.AccountId ?? 1 // Use logged-in user or default
                 };
 
                 _bookingBll.AddBooking(booking);
-                MessageBox.Show("Booking created successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                ClearForm();
-                LoadData();
+                MessageBox.Show("Booking created successfully! Redirecting to payment...", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                
+                var mainWindow = Window.GetWindow(this) as MainWindow;
+                mainWindow?.NavigateToPayment(booking.BookingId);
             }
             catch (Exception ex)
             {
@@ -243,6 +278,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             CbStatus.SelectedIndex = 0;
             TbTotalAmount.Text = "0 VNĐ";
             TbAssignedVehicles.Text = "Auto-assigned on creation";
+            UpdateTourDates();
             
             BtnUpdate.IsEnabled = false;
             BtnAdd.IsEnabled = true;
