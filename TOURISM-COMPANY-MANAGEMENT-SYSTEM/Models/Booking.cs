@@ -11,7 +11,7 @@ public partial class Booking
 
     public int CustomerId { get; set; }
 
-    public int TourId { get; set; }
+    public int ScheduleId { get; set; }
 
     public int AccountId { get; set; }
 
@@ -41,5 +41,5 @@ public partial class Booking
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
-    public virtual Tour Tour { get; set; } = null!;
+    public virtual TourSchedule TourSchedule { get; set; } = null!;
 }

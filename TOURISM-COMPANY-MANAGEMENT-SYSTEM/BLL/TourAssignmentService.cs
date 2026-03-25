@@ -15,7 +15,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
             return _dal.GetAll();
         }
 
-        public void AssignDriver(int tourId, int accountId, int vehicleId)
+        public void AssignDriver(int scheduleId, int accountId, int vehicleId)
         {
             // Validation: Driver must be Active
             var driver = _accountRepo.GetById(accountId);
@@ -23,12 +23,12 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                 throw new Exception("Only active drivers can be assigned to a tour.");
 
             // Validation: Prevent duplicate assignment
-            if (_dal.IsDuplicate(tourId, accountId))
+            if (_dal.IsDuplicate(scheduleId, accountId))
                 throw new Exception("This driver is already assigned to this tour.");
 
             var assignment = new TourAssignment
             {
-                TourId = tourId,
+                ScheduleId = scheduleId,
                 AccountId = accountId,
                 VehicleId = vehicleId
             };

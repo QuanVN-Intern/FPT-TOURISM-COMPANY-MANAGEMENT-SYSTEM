@@ -82,7 +82,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             var selected = CbBooking.SelectedItem as Booking;
             if (selected != null)
             {
-                TbBookingInfo.Text = $"Tour: {selected.Tour.TourName}\nTotal Due: {selected.TotalAmount:N0} VNĐ";
+                TbBookingInfo.Text = $"Tour: {selected.TourSchedule.TourTemplate.TourName}\nTotal Due: {selected.TotalAmount:N0} VNĐ";
                 TxtAmount.Text = selected.TotalAmount.ToString();
             }
             else

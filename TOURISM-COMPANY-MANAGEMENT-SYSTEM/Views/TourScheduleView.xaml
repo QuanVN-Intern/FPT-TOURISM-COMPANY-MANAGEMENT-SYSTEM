@@ -1,0 +1,111 @@
+<UserControl x:Class="TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views.TourScheduleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="750" d:DesignWidth="1100"
+             Background="#F5F7FA">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Title Region -->
+            <RowDefinition Height="*"/>    <!-- DataGrid & Form Region -->
+        </Grid.RowDefinitions>
+
+        <!-- ================= TITLE REGION ================= -->
+        <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15" BorderBrush="#E0E6ED" BorderThickness="1">
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="TxtTitle" Grid.Column="0" Text="✈ TOUR SCHEDULES" FontSize="22" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,5"/>
+                    <Button x:Name="BtnBackToTemplates" Grid.Column="1" Content="Back to Templates" Width="150" Height="32" Background="#7F8C8D" Foreground="White" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" Click="BtnBackToTemplates_Click"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- ================= MAIN CONTENT ================= -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- DataGrid -->
+            <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="10" Margin="0,0,15,0" BorderBrush="#E0E6ED" BorderThickness="1">
+                <DataGrid x:Name="DataGridSchedules" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" SelectionMode="Single" Background="Transparent" RowHeaderWidth="0" BorderThickness="0" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#ECF0F1" SelectionChanged="DataGridSchedules_SelectionChanged">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#F8F9FA"/>
+                            <Setter Property="Foreground" Value="#2C3E50"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="Padding" Value="10"/>
+                        </Style>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Padding" Value="0,5"/>
+                        </Style>
+                    </DataGrid.Resources>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Departure" Binding="{Binding DepartureDate, StringFormat=dd/MM/yyyy}" Width="*" MinWidth="100"/>
+                        <DataGridTextColumn Header="Return" Binding="{Binding ReturnDate, StringFormat=dd/MM/yyyy}" Width="*" MinWidth="100"/>
+                        
+                        <DataGridTextColumn Header="Available Slots" Binding="{Binding AvailableSlots}" Width="*" MinWidth="100"/>
+                        
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*" MinWidth="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <!-- Input Form -->
+            <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="15" BorderBrush="#E0E6ED" BorderThickness="1">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Schedule Details" FontSize="18" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,15"/>
+
+                        <TextBox x:Name="TxtScheduleId" Visibility="Collapsed"/> 
+
+                        <TextBlock Text="Departure Date (*)" Foreground="#7F8C8D" Margin="0,0,0,5"/>
+                        <DatePicker x:Name="DpDeparture" Height="30" Padding="5" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="Available Slots" Foreground="#7F8C8D" Margin="0,0,0,5"/>
+                        <TextBox x:Name="TxtSlots" Height="30" Padding="5" Margin="0,0,0,10" ToolTip="Leave empty to use template's max capacity for new schedules."/>
+
+                        <TextBlock Text="Status" Foreground="#7F8C8D" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="CboStatus" Height="30" Padding="5" Margin="0,0,0,25">
+                            <ComboBoxItem Content="Active"/>
+                            <ComboBoxItem Content="Inactive"/>
+                            <ComboBoxItem Content="Completed"/>
+                            <ComboBoxItem Content="Cancelled"/>
+                        </ComboBox>
+
+                        <!-- Action Buttons -->
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="BtnAdd" Grid.Column="0" Content="Add New" Height="38" Background="#2ECC71" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="BtnAdd_Click"/>
+                            <Button x:Name="BtnUpdate" Grid.Column="2" Content="Update" Height="38" Background="#F1C40F" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" IsEnabled="False" Click="BtnUpdate_Click"/>
+                        </Grid>
+
+                        <Grid Margin="0,5,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="BtnDelete" Grid.Column="0" Content="Delete" Height="35" Background="#E74C3C" Foreground="White" BorderThickness="0" Cursor="Hand" IsEnabled="False" Click="BtnDelete_Click"/>
+                            <Button x:Name="BtnClear" Grid.Column="2" Content="Clear Form" Height="35" Background="#BDC3C7" Foreground="White" BorderThickness="0" Cursor="Hand" Click="BtnClear_Click"/>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

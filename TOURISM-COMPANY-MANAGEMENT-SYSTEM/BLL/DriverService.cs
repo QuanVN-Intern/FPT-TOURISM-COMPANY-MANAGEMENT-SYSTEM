@@ -19,6 +19,11 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
             return _repo.GetAllDrivers().FindAll(d => d.IsActive);
         }
 
+        public List<Account> GetTourGuides()
+        {
+            return _repo.GetTourGuides();
+        }
+
         public void SaveDriver(Account driver)
         {
             if (string.IsNullOrWhiteSpace(driver.FullName))

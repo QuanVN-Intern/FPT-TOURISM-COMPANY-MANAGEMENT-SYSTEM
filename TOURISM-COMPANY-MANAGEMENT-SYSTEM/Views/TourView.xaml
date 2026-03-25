@@ -21,7 +21,7 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="✈ TOUR MANAGEMENT LIST" FontSize="22" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
+                    <TextBlock Grid.Column="0" Text="✈ TOUR TEMPLATES MANAGEMENT" FontSize="22" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
                     <Button x:Name="BtnManageDestinations" Grid.Column="1" Content="📍 Manage Destinations" Width="180" Height="32" Background="#8E44AD" Foreground="White" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" Click="BtnManageDestinations_Click"/>
                 </Grid>
                 
@@ -82,17 +82,7 @@
                         <DataGridTextColumn Header="Price" Binding="{Binding PricePerPerson}" Width="*" MinWidth="100"/>
                         <DataGridTextColumn Header="Days" Binding="{Binding DurationDays}" Width="*" MinWidth="80"/>
                         
-                        <DataGridTextColumn Header="Slot" Width="*" MinWidth="100">
-                            <DataGridTextColumn.Binding>
-                                <MultiBinding StringFormat="{}{0} / {1}">
-                                    <Binding Path="BookedSlots"/>
-                                    <Binding Path="MaxCapacity"/>
-                                </MultiBinding>
-                            </DataGridTextColumn.Binding>
-                        </DataGridTextColumn>
-                        
-                        <DataGridTextColumn Header="Departure" Binding="{Binding DepartureDate, StringFormat=dd/MM/yyyy}" Width="*" MinWidth="100"/>
-                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="*" MinWidth="100"/>
+                        <DataGridTextColumn Header="Capacity" Binding="{Binding MaxCapacity}" Width="*" MinWidth="80"/>
 
                     </DataGrid.Columns>
                 </DataGrid>
@@ -102,7 +92,7 @@
             <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="15" BorderBrush="#E0E6ED" BorderThickness="1">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="Tour Details" FontSize="18" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,15"/>
+                        <TextBlock Text="Tour Template Details" FontSize="18" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,15"/>
 
                         <TextBox x:Name="TxtTourId" Visibility="Collapsed"/> 
 
@@ -122,18 +112,9 @@
                         <TextBox x:Name="TxtDuration" Height="30" Padding="5" Margin="0,0,0,10"/>
 
                         <TextBlock Text="Max Capacity" Foreground="#7F8C8D" Margin="0,0,0,5"/>
-                        <TextBox x:Name="TxtMaxCapacity" Height="30" Padding="5" Margin="0,0,0,15"/>
-                        
-                        <TextBlock Text="Departure Date" Foreground="#7F8C8D" Margin="0,0,0,5"/>
-                        <DatePicker x:Name="DpDeparture" Height="30" Padding="5" Margin="0,0,0,10"/>
+                        <TextBox x:Name="TxtMaxCapacity" Height="30" Padding="5" Margin="0,0,0,25"/>
 
-                        <TextBlock Text="Status" Foreground="#7F8C8D" Margin="0,0,0,5"/>
-                        <ComboBox x:Name="CboStatus" Height="30" Padding="5" Margin="0,0,0,25">
-                            <ComboBoxItem Content="Active"/>
-                            <ComboBoxItem Content="Inactive"/>
-                            <ComboBoxItem Content="Completed"/>
-                            <ComboBoxItem Content="Cancelled"/>
-                        </ComboBox>
+                        <Button x:Name="BtnManageSchedules" Content="View/Manage Schedules" Height="35" Background="#8E44AD" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" IsEnabled="False" Click="BtnManageSchedules_Click" Margin="0,0,0,15"/>
 
                         <!-- Action Buttons -->
                         <Grid Margin="0,0,0,10">

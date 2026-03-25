@@ -14,17 +14,25 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // Show logged-in user info
-            if (AuthSession.Current != null)
-                TxtCurrentUser.Text = $"{AuthSession.Current.FullName}  [{AuthSession.Current.RoleName}]";
+            try
+            {
+                // Show logged-in user info
+                if (AuthSession.Current != null)
+                    TxtCurrentUser.Text = $"{AuthSession.Current.FullName}  [{AuthSession.Current.RoleName}]";
 
-            // Hide Accounts nếu không phải admin
-            BtnOpenAccount.Visibility = AuthSession.CanManageAccounts
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+                // Hide Accounts nếu không phải admin
+                BtnOpenAccount.Visibility = AuthSession.CanManageAccounts
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
 
-            // Default screen
-            MainContent.Content = new TourView();
+                // Default screen
+                MainContent.Content = new TourView();
+            }
+            catch (System.Exception ex)
+            {
+                System.IO.File.WriteAllText("crash_log_mainwindow.txt", ex.ToString());
+                MessageBox.Show("Error displaying Main Window: " + ex.Message);
+            }
         }
 
         private void BtnOpenTour_Click(object sender, RoutedEventArgs e)

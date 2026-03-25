@@ -59,7 +59,8 @@ ORDER BY [Month];", conn);
 SELECT T.TourName,
        SUM(B.TotalAmount) AS Revenue
 FROM Bookings B
-JOIN Tours T ON T.TourId = B.TourId
+JOIN TourSchedules TS ON TS.ScheduleId = B.ScheduleId
+JOIN TourTemplates T ON T.TourTemplateId = TS.TourTemplateId
 WHERE B.IsDeleted = 0
   AND T.IsDeleted = 0
   AND B.BookingDate >= @FromDate
@@ -114,7 +115,8 @@ SELECT TOP 10
        SUM(B.NumPersons) AS [Total Customers],
        CAST(SUM(B.NumPersons) * 100.0 / NULLIF(MAX(T.MaxCapacity), 0) AS decimal(6,2)) AS [Occupancy Rate]
 FROM Bookings B
-JOIN Tours T ON T.TourId = B.TourId
+JOIN TourSchedules TS ON TS.ScheduleId = B.ScheduleId
+JOIN TourTemplates T ON T.TourTemplateId = TS.TourTemplateId
 WHERE B.IsDeleted = 0
   AND T.IsDeleted = 0
   AND B.Status <> 'Cancelled'
@@ -134,14 +136,15 @@ ORDER BY [Total Customers] DESC;", conn);
 SELECT TOP 10
        T.TourName,
        ISNULL(SUM(CASE WHEN B.Status <> 'Cancelled' THEN B.NumPersons ELSE 0 END), 0) AS [Total Customers],
-       CAST(ISNULL(SUM(CASE WHEN B.Status <> 'Cancelled' THEN B.NumPersons ELSE 0 END), 0) * 100.0 / NULLIF(T.MaxCapacity, 0) AS decimal(6,2)) AS [Occupancy Rate]
-FROM Tours T
-LEFT JOIN Bookings B ON B.TourId = T.TourId
+       CAST(ISNULL(SUM(CASE WHEN B.Status <> 'Cancelled' THEN B.NumPersons ELSE 0 END), 0) * 100.0 / NULLIF(MAX(T.MaxCapacity), 0) AS decimal(6,2)) AS [Occupancy Rate]
+FROM TourTemplates T
+LEFT JOIN TourSchedules TS ON T.TourTemplateId = TS.TourTemplateId AND TS.IsDeleted = 0
+LEFT JOIN Bookings B ON B.ScheduleId = TS.ScheduleId
     AND B.IsDeleted = 0
     AND B.BookingDate >= @FromDate
     AND B.BookingDate < DATEADD(day, 1, @ToDate)
 WHERE T.IsDeleted = 0
-GROUP BY T.TourName, T.MaxCapacity
+GROUP BY T.TourName
 ORDER BY [Total Customers] ASC;", conn);
             cmd.Parameters.AddWithValue("@FromDate", from.Date);
             cmd.Parameters.AddWithValue("@ToDate", to.Date);
@@ -154,14 +157,15 @@ ORDER BY [Total Customers] ASC;", conn);
             using var cmd = new SqlCommand(@"
 SELECT T.TourName,
        ISNULL(SUM(CASE WHEN B.Status <> 'Cancelled' THEN B.NumPersons ELSE 0 END), 0) AS [Total Customers],
-       CAST(ISNULL(SUM(CASE WHEN B.Status <> 'Cancelled' THEN B.NumPersons ELSE 0 END), 0) * 100.0 / NULLIF(T.MaxCapacity, 0) AS decimal(6,2)) AS [Occupancy Rate]
-FROM Tours T
-LEFT JOIN Bookings B ON B.TourId = T.TourId
+       CAST(ISNULL(SUM(CASE WHEN B.Status <> 'Cancelled' THEN B.NumPersons ELSE 0 END), 0) * 100.0 / NULLIF(MAX(T.MaxCapacity), 0) AS decimal(6,2)) AS [Occupancy Rate]
+FROM TourTemplates T
+LEFT JOIN TourSchedules TS ON T.TourTemplateId = TS.TourTemplateId AND TS.IsDeleted = 0
+LEFT JOIN Bookings B ON B.ScheduleId = TS.ScheduleId
     AND B.IsDeleted = 0
     AND B.BookingDate >= @FromDate
     AND B.BookingDate < DATEADD(day, 1, @ToDate)
 WHERE T.IsDeleted = 0
-GROUP BY T.TourName, T.MaxCapacity
+GROUP BY T.TourName
 ORDER BY [Occupancy Rate] DESC;", conn);
             cmd.Parameters.AddWithValue("@FromDate", from.Date);
             cmd.Parameters.AddWithValue("@ToDate", to.Date);

@@ -23,6 +23,24 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
             return _dal.GetAllVehicles();
         }
 
+        public List<Vehicle> GetAllVehiclesWithDriver()
+        {
+            return _dal.GetAllVehiclesWithDriver();
+        }
+
+        public void AssignDriverToVehicle(int vehicleId, int? driverId)
+        {
+            // Validation: driver can only be assigned to one vehicle at a time
+            if (driverId.HasValue)
+            {
+                var allVehicles = _dal.GetAllVehiclesWithDriver();
+                var conflict = allVehicles.FirstOrDefault(v => v.DriverId == driverId && v.VehicleId != vehicleId);
+                if (conflict != null)
+                    throw new Exception($"Driver is already assigned to vehicle '{conflict.PlateNumber}'. Please unassign them first.");
+            }
+            _dal.UpdateDriverForVehicle(vehicleId, driverId);
+        }
+
         public void AddVehicle(Vehicle vehicle)
         {
             _dal.AddVehicle(vehicle);

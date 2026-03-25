@@ -31,10 +31,12 @@ public partial class TravelCompanyDbContext : DbContext
 
     public virtual DbSet<Role> Roles { get; set; }
 
-    public virtual DbSet<Tour> Tours { get; set; }
+    public virtual DbSet<TourTemplate> TourTemplates { get; set; }
+    public virtual DbSet<TourSchedule> TourSchedules { get; set; }
 
     public virtual DbSet<Vehicle> Vehicles { get; set; }
     public virtual DbSet<TourVehicle> TourVehicles { get; set; }
+    public virtual DbSet<TourAssignment> TourAssignments { get; set; }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlServer(GetConnectionString());
@@ -88,7 +90,7 @@ public partial class TravelCompanyDbContext : DbContext
 
             entity.HasIndex(e => e.Status, "IX_Bookings_Status");
 
-            entity.HasIndex(e => e.TourId, "IX_Bookings_Tour");
+            entity.HasIndex(e => e.ScheduleId, "IX_Bookings_Schedule");
 
             entity.HasIndex(e => e.BookingCode, "UQ__Bookings__C6E56BD54FBD8E8F").IsUnique();
 
@@ -115,10 +117,10 @@ public partial class TravelCompanyDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Book_Customer");
 
-            entity.HasOne(d => d.Tour).WithMany(p => p.Bookings)
-                .HasForeignKey(d => d.TourId)
+            entity.HasOne(d => d.TourSchedule).WithMany(p => p.Bookings)
+                .HasForeignKey(d => d.ScheduleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Book_Tour");
+                .HasConstraintName("FK_Book_Schedule");
         });
 
         modelBuilder.Entity<Customer>(entity =>
@@ -227,31 +229,15 @@ public partial class TravelCompanyDbContext : DbContext
                     });
         });
 
-        modelBuilder.Entity<Tour>(entity =>
+        modelBuilder.Entity<TourTemplate>(entity =>
         {
-            entity.HasKey(e => e.TourId).HasName("PK__Tours__604CEA30AB28C56D");
+            entity.HasKey(e => e.TourTemplateId).HasName("PK__TourTemplates");
 
-            entity.HasIndex(e => e.TourCode, "IX_Tours_Code");
-
-            entity.HasIndex(e => e.DepartureDate, "IX_Tours_DepartureDate");
-
-            entity.HasIndex(e => e.DestinationId, "IX_Tours_Destination");
-
-            entity.HasIndex(e => e.TourName, "IX_Tours_Name");
-
-            entity.HasIndex(e => e.PricePerPerson, "IX_Tours_Price");
-
-            entity.HasIndex(e => e.Status, "IX_Tours_Status").HasFilter("([IsDeleted]=(0))");
-
-            entity.HasIndex(e => e.TourCode, "UQ__Tours__1982F8D022E33620").IsUnique();
+            entity.HasIndex(e => e.TourCode, "UQ__TourTemplates_Code").IsUnique();
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.Description).HasMaxLength(2000);
             entity.Property(e => e.PricePerPerson).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.ReturnDate).HasComputedColumnSql("(dateadd(day,[DurationDays]-(1),[DepartureDate]))", true);
-            entity.Property(e => e.Status)
-                .HasMaxLength(20)
-                .HasDefaultValue("Active");
+            entity.Property(e => e.Description).HasMaxLength(2000);
             entity.Property(e => e.ThumbnailUrl).HasMaxLength(500);
             entity.Property(e => e.TourCode)
                 .HasMaxLength(20)
@@ -259,11 +245,28 @@ public partial class TravelCompanyDbContext : DbContext
             entity.Property(e => e.TourName).HasMaxLength(200);
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(getdate())");
 
-            entity.HasOne(d => d.Destination).WithMany(p => p.Tours)
+            entity.HasOne(d => d.Destination).WithMany(p => p.TourTemplates)
                 .HasForeignKey(d => d.DestinationId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Tour_Dest");
+                .HasConstraintName("FK_Template_Destination");
         });
+
+        modelBuilder.Entity<TourSchedule>(entity =>
+        {
+            entity.HasKey(e => e.ScheduleId).HasName("PK__TourSchedules");
+
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasDefaultValue("Active");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.TourTemplate).WithMany(p => p.TourSchedules)
+                .HasForeignKey(d => d.TourTemplateId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Schedule_Template");
+        });
+
         modelBuilder.Entity<TourVehicle>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__TourVehi__3214EC074B5E385F");
@@ -272,6 +275,26 @@ public partial class TravelCompanyDbContext : DbContext
                 .HasForeignKey(d => d.VehicleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__TourVehic__Vehic__07C12930");
+        });
+
+        modelBuilder.Entity<TourAssignment>(entity =>
+        {
+            entity.HasKey(e => e.AssignmentId).HasName("PK_TourAssignments");
+            
+            entity.HasOne(d => d.TourSchedule).WithMany(p => p.TourAssignments)
+                .HasForeignKey(d => d.ScheduleId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TourAssign_Schedule");
+
+            entity.HasOne(d => d.Account).WithMany(p => p.TourAssignments)
+                .HasForeignKey(d => d.AccountId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TourAssign_Account");
+
+            entity.HasOne(d => d.Vehicle).WithMany(p => p.TourAssignments)
+                .HasForeignKey(d => d.VehicleId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TourAssign_Vehicle");
         });
 
         modelBuilder.Entity<Vehicle>(entity =>
@@ -287,6 +310,11 @@ public partial class TravelCompanyDbContext : DbContext
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .HasDefaultValue("Available");
+
+            entity.HasOne(d => d.Driver).WithMany()
+                .HasForeignKey(d => d.DriverId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Vehicle_Driver");
         });
 
         OnModelCreatingPartial(modelBuilder);

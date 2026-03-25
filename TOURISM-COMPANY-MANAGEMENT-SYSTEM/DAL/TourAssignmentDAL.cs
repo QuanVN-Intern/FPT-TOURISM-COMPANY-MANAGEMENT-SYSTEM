@@ -25,9 +25,10 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             var list = new List<TourAssignment>();
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
-            var sql = @"SELECT ta.*, t.TourName, a.FullName as DriverName, v.PlateNumber
+            var sql = @"SELECT ta.*, tt.TourName, a.FullName as DriverName, v.PlateNumber
                         FROM   TourAssignments ta
-                        JOIN   Tours           t ON ta.TourId = t.TourId
+                        JOIN   TourSchedules   t ON ta.ScheduleId = t.ScheduleId
+                        JOIN   TourTemplates   tt ON t.TourTemplateId = tt.TourTemplateId
                         JOIN   Accounts        a ON ta.AccountId = a.AccountId
                         JOIN   Vehicles        v ON ta.VehicleId = v.VehicleId";
             using var cmd = new SqlCommand(sql, conn);
@@ -37,10 +38,10 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
                 list.Add(new TourAssignment
                 {
                     AssignmentId = (int)reader["AssignmentId"],
-                    TourId = (int)reader["TourId"],
+                    ScheduleId = (int)reader["ScheduleId"],
                     AccountId = (int)reader["AccountId"],
                     VehicleId = (int)reader["VehicleId"],
-                    Tour = new Tour { TourName = reader["TourName"].ToString() ?? "" },
+                    TourSchedule = new TourSchedule { TourTemplate = new TourTemplate { TourName = reader["TourName"].ToString() ?? "" } },
                     Account = new Account { FullName = reader["DriverName"].ToString() ?? "" },
                     Vehicle = new Vehicle { PlateNumber = reader["PlateNumber"].ToString() ?? "" }
                 });
@@ -52,10 +53,10 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
         {
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
-            var sql = @"INSERT INTO TourAssignments (TourId, AccountId, VehicleId)
-                        VALUES (@TourId, @AccountId, @VehicleId)";
+            var sql = @"INSERT INTO TourAssignments (ScheduleId, AccountId, VehicleId)
+                        VALUES (@ScheduleId, @AccountId, @VehicleId)";
             using var cmd = new SqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@TourId", assignment.TourId);
+            cmd.Parameters.AddWithValue("@ScheduleId", assignment.ScheduleId);
             cmd.Parameters.AddWithValue("@AccountId", assignment.AccountId);
             cmd.Parameters.AddWithValue("@VehicleId", assignment.VehicleId);
             cmd.ExecuteNonQuery();
@@ -71,13 +72,13 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             cmd.ExecuteNonQuery();
         }
 
-        public bool IsDuplicate(int tourId, int accountId)
+        public bool IsDuplicate(int scheduleId, int accountId)
         {
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
-            var sql = "SELECT COUNT(1) FROM TourAssignments WHERE TourId = @TourId AND AccountId = @AccountId";
+            var sql = "SELECT COUNT(1) FROM TourAssignments WHERE ScheduleId = @ScheduleId AND AccountId = @AccountId";
             using var cmd = new SqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("@TourId", tourId);
+            cmd.Parameters.AddWithValue("@ScheduleId", scheduleId);
             cmd.Parameters.AddWithValue("@AccountId", accountId);
             return (int)cmd.ExecuteScalar() > 0;
         }

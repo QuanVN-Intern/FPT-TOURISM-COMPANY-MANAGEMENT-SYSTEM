@@ -110,7 +110,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
         {
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
-            var sql = "SELECT COUNT(1) FROM Tours WHERE DestinationId = @Id AND IsDeleted = 0";
+            var sql = "SELECT COUNT(1) FROM TourTemplates WHERE DestinationId = @Id AND IsDeleted = 0";
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Id", id);
             return (int)cmd.ExecuteScalar() > 0;
