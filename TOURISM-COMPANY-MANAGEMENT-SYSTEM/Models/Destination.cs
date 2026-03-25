@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Models;
@@ -21,5 +21,5 @@ public partial class Destination
 
     public bool IsDeleted { get; set; }
 
-    public virtual ICollection<Tour> Tours { get; set; } = new List<Tour>();
+    public virtual ICollection<TourTemplate> TourTemplates { get; set; } = new List<TourTemplate>();
 }

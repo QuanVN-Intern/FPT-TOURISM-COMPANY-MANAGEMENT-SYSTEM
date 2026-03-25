@@ -25,14 +25,14 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                     // Ensure auto-release is run before checking availability
                     AutoReleaseVehicles();
 
-                    // 1. Get Tour for price and slot calculation
-                    var tour = _context.Tours.Find(b.TourId);
-                    if (tour == null) throw new Exception("Tour not found.");
-                    if (tour.AvailableSlots < b.NumPersons) 
-                        throw new Exception($"Not enough slots available. Remaining: {tour.AvailableSlots}");
+                    // 1. Get Schedule for price and slot calculation
+                    var schedule = _context.TourSchedules.Include(s => s.TourTemplate).FirstOrDefault(s => s.ScheduleId == b.ScheduleId);
+                    if (schedule == null) throw new Exception("Schedule not found.");
+                    if (schedule.AvailableSlots < b.NumPersons) 
+                        throw new Exception($"Not enough slots available. Remaining: {schedule.AvailableSlots}");
 
                     // 2. Auto-calculate TotalAmount
-                    b.TotalAmount = tour.PricePerPerson * b.NumPersons;
+                    b.TotalAmount = schedule.TourTemplate.PricePerPerson * b.NumPersons;
                     
                     // Use provided BookingDate if set (not min value), otherwise use Now
                     if (b.BookingDate == default)
@@ -44,8 +44,8 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                     b.BookingCode = "BK" + DateTime.Now.ToString("yyyyMMddHHmmss");
 
                     // 3. Update Tour Slots
-                    tour.AvailableSlots -= b.NumPersons;
-                    tour.UpdatedAt = DateTime.Now;
+                    schedule.AvailableSlots -= b.NumPersons;
+                    schedule.UpdatedAt = DateTime.Now;
 
                     // 4. Auto-assign Vehicles (Gap-based Strategy)
                     var availableVehicles = _context.Vehicles
@@ -98,7 +98,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
 
                     foreach (var v in toAssign)
                     {
-                        _context.TourVehicles.Add(new TourVehicle { TourId = b.TourId, VehicleId = v.VehicleId });
+                        _context.TourVehicles.Add(new TourVehicle { ScheduleId = b.ScheduleId, VehicleId = v.VehicleId });
                         v.Status = "Busy";
                     }
 
@@ -124,13 +124,12 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                     
                     
                     var bookings = context.Bookings
-                        .Include(b => b.Tour)
+                        .Include(b => b.TourSchedule).ThenInclude(s => s.TourTemplate)
                         .Where(b => b.Status == "Confirmed")
                         .ToList();
 
-                  
                     var completedBookings = bookings
-                        .Where(b => b.BookingDate.AddDays(b.Tour.DurationDays) < today)
+                        .Where(b => b.BookingDate.AddDays(b.TourSchedule.TourTemplate.DurationDays) < today)
                         .ToList();
 
                     if (completedBookings.Any())
@@ -140,13 +139,12 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                             b.Status = "Completed";
                             b.UpdatedAt = DateTime.Now;
 
-                            // Update Tour status too
-                            b.Tour.Status = "Completed";
-                            b.Tour.UpdatedAt = DateTime.Now;
+                            // Update Schedule status too
+                            b.TourSchedule.Status = "Completed";
+                            b.TourSchedule.UpdatedAt = DateTime.Now;
 
-                          
                             var vIds = context.TourVehicles
-                                .Where(tv => tv.TourId == b.TourId)
+                                .Where(tv => tv.ScheduleId == b.ScheduleId)
                                 .Select(tv => tv.VehicleId)
                                 .ToList();
 
@@ -181,20 +179,19 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                     if (status == "Cancelled" && b.Status != "Cancelled")
                     {
                        
-                        var tour = _context.Tours.Find(b.TourId);
-                        if (tour != null)
+                        var schedule = _context.TourSchedules.Find(b.ScheduleId);
+                        if (schedule != null)
                         {
-                            tour.AvailableSlots += b.NumPersons;
+                            schedule.AvailableSlots += b.NumPersons;
                         }
                         b.CancelledAt = DateTime.Now;
                         b.CancelReason = reason;
 
-                     
-                        ReleaseVehiclesForTour(b.TourId, false);
+                        ReleaseVehiclesForTour(b.ScheduleId, false);
                     }
                     else if (status == "Completed" && b.Status != "Completed")
                     {
-                        ReleaseVehiclesForTour(b.TourId, true);
+                        ReleaseVehiclesForTour(b.ScheduleId, true);
                     }
 
                     b.Status = status;
@@ -211,21 +208,21 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
             }
         }
 
-        private void ReleaseVehiclesForTour(int tourId, bool completeComponent = true)
+        private void ReleaseVehiclesForTour(int scheduleId, bool completeComponent = true)
         {
             if (completeComponent)
             {
-                var tour = _context.Tours.Find(tourId);
-                if (tour != null)
+                var schedule = _context.TourSchedules.Find(scheduleId);
+                if (schedule != null)
                 {
-                    tour.Status = "Completed";
-                    tour.UpdatedAt = DateTime.Now;
+                    schedule.Status = "Completed";
+                    schedule.UpdatedAt = DateTime.Now;
                 }
             }
 
             var tourVehicles = _context.TourVehicles
                 .Include(tv => tv.Vehicle)
-                .Where(tv => tv.TourId == tourId)
+                .Where(tv => tv.ScheduleId == scheduleId)
                 .ToList();
 
             foreach (var tv in tourVehicles)
@@ -239,9 +236,9 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
             return _context.Customers.OrderBy(c => c.FullName).ToList();
         }
 
-        public List<Tour> GetActiveTours()
+        public List<TourSchedule> GetActiveSchedules()
         {
-            return _context.Tours.Where(t => t.Status == "Active" && !t.IsDeleted).OrderBy(t => t.TourName).ToList();
+            return _context.TourSchedules.Include(s => s.TourTemplate).Where(s => s.Status == "Active" && !s.IsDeleted).OrderBy(s => s.TourTemplate.TourName).ToList();
         }
 
         public List<Vehicle> GetAvailableVehicles()

@@ -11,7 +11,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
     public partial class BookingView : UserControl
     {
         private readonly BookingBLL _bookingBll = new BookingBLL();
-        private Tour? _selectedTour;
+        private TourSchedule? _selectedSchedule;
 
         public BookingView()
         {
@@ -41,7 +41,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                 _bookingBll.AutoReleaseVehicles(); // Check and release old vehicles
                 dgBookings.ItemsSource = _bookingBll.GetAllBookings();
                 CbCustomer.ItemsSource = _bookingBll.GetCustomers();
-                CbTour.ItemsSource = _bookingBll.GetActiveTours();
+                CbSchedule.ItemsSource = _bookingBll.GetActiveSchedules();
             }
             catch (Exception ex)
             {
@@ -67,8 +67,8 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             {
                 txtId.Text = selected.BookingId.ToString();
                 CbCustomer.SelectedValue = selected.CustomerId;
-                CbTour.SelectedValue = selected.TourId;
-                _selectedTour = selected.Tour;
+                CbSchedule.SelectedValue = selected.ScheduleId;
+                _selectedSchedule = selected.TourSchedule;
                 UpdateTourDates();
 
                 TxtNumPersons.Text = selected.NumPersons.ToString();
@@ -89,34 +89,34 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
 
                 // Disable fields during update - Status only allowed
                 CbCustomer.IsEnabled = false;
-                CbTour.IsEnabled = false;
+                CbSchedule.IsEnabled = false;
                 TxtNumPersons.IsEnabled = false;
                 TxtNotes.IsEnabled = false;
             }
         }
 
-        private void CbTour_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CbSchedule_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _selectedTour = CbTour.SelectedItem as Tour;
+            _selectedSchedule = CbSchedule.SelectedItem as TourSchedule;
             CalculateTotal();
             UpdateTourDates();
         }
 
         private void UpdateTourDates()
         {
-            if (_selectedTour != null)
+            if (_selectedSchedule != null)
             {
-                TbDepartureDate.Text = _selectedTour.DepartureDate.ToString("dd/MM/yyyy");
+                TbDepartureDate.Text = _selectedSchedule.DepartureDate.ToString("dd/MM/yyyy");
                 TbDepartureDate.Foreground = System.Windows.Media.Brushes.Black;
 
-                if (_selectedTour.ReturnDate.HasValue)
+                if (_selectedSchedule.ReturnDate.HasValue)
                 {
-                    TbEndDate.Text = _selectedTour.ReturnDate.Value.ToString("dd/MM/yyyy");
+                    TbEndDate.Text = _selectedSchedule.ReturnDate.Value.ToString("dd/MM/yyyy");
                 }
                 else
                 {
                     // Fallback to duration if return date not set
-                    DateTime endDate = _selectedTour.DepartureDate.ToDateTime(TimeOnly.MinValue).AddDays(_selectedTour.DurationDays);
+                    DateTime endDate = _selectedSchedule.DepartureDate.ToDateTime(TimeOnly.MinValue).AddDays(_selectedSchedule.TourTemplate.DurationDays);
                     TbEndDate.Text = endDate.ToString("dd/MM/yyyy");
                 }
                 TbEndDate.Foreground = System.Windows.Media.Brushes.Black;
@@ -193,9 +193,9 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
 
         private void CalculateTotal()
         {
-            if (_selectedTour != null && int.TryParse(TxtNumPersons.Text, out int num))
+            if (_selectedSchedule != null && int.TryParse(TxtNumPersons.Text, out int num))
             {
-                decimal total = _selectedTour.PricePerPerson * num;
+                decimal total = _selectedSchedule.TourTemplate.PricePerPerson * num;
                 TbTotalAmount.Text = $"{total:N0} VNĐ";
             }
             else
@@ -208,9 +208,9 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
         {
             try
             {
-                if (CbCustomer.SelectedValue == null || CbTour.SelectedValue == null)
+                if (CbCustomer.SelectedValue == null || CbSchedule.SelectedValue == null)
                 {
-                    MessageBox.Show("Please select customer and tour.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Please select customer and schedule.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -223,8 +223,8 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                 var booking = new Booking
                 {
                     CustomerId = (int)CbCustomer.SelectedValue,
-                    TourId = (int)CbTour.SelectedValue,
-                    BookingDate = _selectedTour.DepartureDate.ToDateTime(TimeOnly.MinValue),
+                    ScheduleId = (int)CbSchedule.SelectedValue,
+                    BookingDate = _selectedSchedule.DepartureDate.ToDateTime(TimeOnly.MinValue),
                     NumPersons = num,
                     Notes = TxtNotes.Text.Trim(),
                     AccountId = AuthSession.Current?.AccountId ?? 1 // Use logged-in user or default
@@ -234,7 +234,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                 MessageBox.Show("Booking created successfully! Redirecting to payment...", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 
                 var mainWindow = Window.GetWindow(this) as MainWindow;
-                mainWindow?.NavigateToPayment(booking.BookingId);
+                //smainWindow?.NavigateToPayment(booking.BookingId);
             }
             catch (Exception ex)
             {
@@ -272,7 +272,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
         {
             txtId.Text = string.Empty;
             CbCustomer.SelectedIndex = -1;
-            CbTour.SelectedIndex = -1;
+            CbSchedule.SelectedIndex = -1;
             TxtNumPersons.Text = string.Empty;
             TxtNotes.Text = string.Empty;
             CbStatus.SelectedIndex = 0;
@@ -286,7 +286,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
 
             // Re-enable fields
             CbCustomer.IsEnabled = true;
-            CbTour.IsEnabled = true;
+            CbSchedule.IsEnabled = true;
             TxtNumPersons.IsEnabled = true;
             TxtNotes.IsEnabled = true;
         }

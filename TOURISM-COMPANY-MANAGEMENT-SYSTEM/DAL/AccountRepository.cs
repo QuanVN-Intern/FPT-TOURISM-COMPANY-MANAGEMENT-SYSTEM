@@ -100,6 +100,22 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             return list;
         }
 
+        public List<Account> GetTourGuides()
+        {
+            var list = new List<Account>();
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
+            var sql = @"SELECT a.*, r.RoleName
+                        FROM   Accounts a
+                        JOIN   Roles    r ON a.RoleId = r.RoleId
+                        WHERE  a.IsDeleted = 0 AND r.RoleName = 'Tour Guide'
+                        ORDER BY a.FullName";
+            using var cmd = new SqlCommand(sql, conn);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read()) list.Add(MapToAccount(reader));
+            return list;
+        }
+
         public void Update(Account a)
         {
             using var conn = new SqlConnection(_connectionString);

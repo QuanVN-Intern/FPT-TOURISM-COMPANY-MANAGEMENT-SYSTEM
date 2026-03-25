@@ -16,7 +16,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
                     .Include(p => p.Booking)
                     .ThenInclude(b => b.Customer)
                     .Include(p => p.Booking)
-                    .ThenInclude(b => b.Tour)
+                    .ThenInclude(b => b.TourSchedule).ThenInclude(s => s.TourTemplate)
                     .OrderByDescending(p => p.CreatedAt)
                     .ToList();
             }
@@ -72,7 +72,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             {
                 return context.Bookings
                     .Include(b => b.Customer)
-                    .Include(b => b.Tour)
+                    .Include(b => b.TourSchedule).ThenInclude(s => s.TourTemplate)
                     .Where(b => b.Status == "Confirmed" && !b.IsDeleted)
                     .ToList();
             }

@@ -14,7 +14,8 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             {
                 return context.Bookings
                     .Include(b => b.Customer)
-                    .Include(b => b.Tour)
+                    .Include(b => b.TourSchedule)
+                        .ThenInclude(ts => ts.TourTemplate)
                     .Where(b => !b.IsDeleted)
                     .OrderByDescending(b => b.CreatedAt)
                     .ToList();
@@ -27,7 +28,8 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             {
                 return context.Bookings
                     .Include(b => b.Customer)
-                    .Include(b => b.Tour)
+                    .Include(b => b.TourSchedule)
+                        .ThenInclude(ts => ts.TourTemplate)
                     .FirstOrDefault(b => b.BookingId == id && !b.IsDeleted);
             }
         }
@@ -38,7 +40,8 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             {
                 return context.Bookings
                     .Include(b => b.Customer)
-                    .Include(b => b.Tour)
+                    .Include(b => b.TourSchedule)
+                        .ThenInclude(ts => ts.TourTemplate)
                     .Where(b => !b.IsDeleted && 
                                (b.BookingCode.Contains(kw) || b.Customer.FullName.Contains(kw)))
                     .OrderByDescending(b => b.CreatedAt)

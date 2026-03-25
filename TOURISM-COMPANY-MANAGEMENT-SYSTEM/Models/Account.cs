@@ -34,6 +34,7 @@ public partial class Account
     public virtual Role Role { get; set; } = null!;
 
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public virtual ICollection<TourAssignment> TourAssignments { get; set; } = new List<TourAssignment>();
 
     /// <summary>Populated by JOIN in AccountRepository — not a DB column.</summary>
     [NotMapped]

@@ -38,7 +38,7 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Code" Binding="{Binding BookingCode}" Width="100"/>
                     <DataGridTextColumn Header="Customer" Binding="{Binding Customer.FullName}" Width="*"/>
-                    <DataGridTextColumn Header="Tour" Binding="{Binding Tour.TourName}" Width="*"/>
+                    <DataGridTextColumn Header="Tour" Binding="{Binding TourSchedule.TourTemplate.TourName}" Width="*"/>
                     <DataGridTextColumn Header="Persons" Binding="{Binding NumPersons}" Width="70"/>
                     <DataGridTextColumn Header="Total" Binding="{Binding TotalAmount, StringFormat={}{0:N0} VNĐ}" Width="120"/>
                     <DataGridTextColumn Header="Booking Date" Binding="{Binding BookingDate, StringFormat={}{0:dd/MM/yyyy}}" Width="100"/>
@@ -58,8 +58,8 @@
                     <TextBlock Text="Select Customer" Margin="0,5,0,2"/>
                     <ComboBox x:Name="CbCustomer" DisplayMemberPath="FullName" SelectedValuePath="CustomerId" Height="30" Margin="0,0,0,10"/>
 
-                    <TextBlock Text="Select Tour" Margin="0,5,0,2"/>
-                    <ComboBox x:Name="CbTour" DisplayMemberPath="TourName" SelectedValuePath="TourId" Height="30" Margin="0,0,0,10" SelectionChanged="CbTour_SelectionChanged"/>
+                    <TextBlock Text="Select Schedule" Margin="0,5,0,2"/>
+                    <ComboBox x:Name="CbSchedule" DisplayMemberPath="DisplayText" SelectedValuePath="ScheduleId" Height="30" Margin="0,0,0,10" SelectionChanged="CbSchedule_SelectionChanged"/>
 
                     <TextBlock Text="Departure Date" Margin="0,5,0,2"/>
                     <Border Background="#F9FAFB" Padding="10" Margin="0,0,0,10" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1">
