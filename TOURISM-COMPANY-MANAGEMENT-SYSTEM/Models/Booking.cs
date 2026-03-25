@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Models;

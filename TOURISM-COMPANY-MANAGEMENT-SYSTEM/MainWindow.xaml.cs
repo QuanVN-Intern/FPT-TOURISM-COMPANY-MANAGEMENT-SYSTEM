@@ -42,6 +42,14 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM
         private void BtnOpenAccount_Click(object sender, RoutedEventArgs e)
             => MainContent.Content = new AccountView();
 
+        //private void BtnOpenPayment_Click(object sender, RoutedEventArgs e)
+        //    => NavigateToPayment();
+
+        //public void NavigateToPayment(int? bookingId = null)
+        //{
+        //    MainContent.Content = new PaymentView(bookingId);
+        //}
+
         private void BtnLogout_Click(object sender, RoutedEventArgs e)
         {
             var confirm = MessageBox.Show(
