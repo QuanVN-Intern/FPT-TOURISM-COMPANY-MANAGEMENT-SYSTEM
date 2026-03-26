@@ -11,22 +11,23 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
         private readonly AccountService _service = new AccountService();
         private readonly Account? _existing;
 
-        public AccountFormWindow(Account? existing, List<Role> roles)
+        public AccountFormWindow(Account? existing)
         {
             InitializeComponent();
             _existing = existing;
 
-            CmbRole.ItemsSource = roles;
+            // Use assignable roles only (no Admin in the list)
+            CmbRole.ItemsSource = _service.GetAssignableRoles();
 
             if (existing != null)
             {
-                // Edit mode — hide username/password fields
-                TxtTitle.Text           = "Edit Account";
+                TxtTitle.Text            = "Edit Account";
                 PanelUsername.Visibility = Visibility.Collapsed;
                 PanelPassword.Visibility = Visibility.Collapsed;
 
-                TxtFullName.Text  = existing.FullName;
-                TxtEmail.Text     = existing.Email;
+                TxtFullName.Text      = existing.FullName;
+                TxtEmail.Text         = existing.Email;
+                DpDob.SelectedDate    = existing.DateOfBirth;
                 CmbRole.SelectedValue = existing.RoleId;
             }
             else
@@ -41,13 +42,13 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             {
                 if (_existing == null)
                 {
-                    // Add mode
                     var a = new Account
                     {
-                        Username  = TxtUsername.Text.Trim(),
-                        FullName  = TxtFullName.Text.Trim(),
-                        Email     = TxtEmail.Text.Trim(),
-                        RoleId    = (int)(CmbRole.SelectedValue ?? 0),
+                        Username    = TxtUsername.Text.Trim(),
+                        FullName    = TxtFullName.Text.Trim(),
+                        Email       = TxtEmail.Text.Trim(),
+                        RoleId      = (int)(CmbRole.SelectedValue ?? 0),
+                        DateOfBirth = DpDob.SelectedDate,
                     };
                     _service.CreateAccount(a, TxtPassword.Password);
                     MessageBox.Show("Account created successfully.", "Success",
@@ -55,14 +56,14 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                 }
                 else
                 {
-                    // Edit mode
                     var a = new Account
                     {
-                        AccountId = _existing.AccountId,
-                        FullName  = TxtFullName.Text.Trim(),
-                        Email     = TxtEmail.Text.Trim(),
-                        RoleId    = (int)(CmbRole.SelectedValue ?? 0),
-                        IsActive  = _existing.IsActive,
+                        AccountId   = _existing.AccountId,
+                        FullName    = TxtFullName.Text.Trim(),
+                        Email       = TxtEmail.Text.Trim(),
+                        RoleId      = (int)(CmbRole.SelectedValue ?? 0),
+                        IsActive    = _existing.IsActive,
+                        DateOfBirth = DpDob.SelectedDate,
                     };
                     _service.UpdateAccount(a);
                     MessageBox.Show("Account updated successfully.", "Success",
@@ -74,7 +75,8 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(ex.Message, "Validation Error",
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
