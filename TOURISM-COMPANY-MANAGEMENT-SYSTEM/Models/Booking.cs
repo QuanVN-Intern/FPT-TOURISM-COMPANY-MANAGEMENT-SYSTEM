@@ -11,6 +11,8 @@ public partial class Booking
 
     public int CustomerId { get; set; }
 
+    public int TourId { get; set; }
+
     public int ScheduleId { get; set; }
 
     public int AccountId { get; set; }

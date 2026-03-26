@@ -28,9 +28,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
            
             if (!canUpdate)
             {
-                CbStatus.Visibility = Visibility.Collapsed;
-                BtnUpdate.Visibility = Visibility.Collapsed;
-                
+                PanelStatus.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -74,15 +72,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                 TxtNumPersons.Text = selected.NumPersons.ToString();
                 TxtNotes.Text = selected.Notes;
                 
-                // Select Status
-                foreach (ComboBoxItem item in CbStatus.Items)
-                {
-                    if (item.Content.ToString() == selected.Status)
-                    {
-                        CbStatus.SelectedItem = item;
-                        break;
-                    }
-                }
+                // Status selection logic removed as CbStatus is hidden
 
                 BtnUpdate.IsEnabled = true;
                 BtnAdd.IsEnabled = false;
@@ -91,7 +81,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                 CbCustomer.IsEnabled = false;
                 CbSchedule.IsEnabled = false;
                 TxtNumPersons.IsEnabled = false;
-                TxtNotes.IsEnabled = false;
+                TxtNotes.IsEnabled = true; // Still allow note updates
             }
         }
 
@@ -140,6 +130,19 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
         {
             if (int.TryParse(TxtNumPersons.Text, out int num) && num > 0)
             {
+                // If we are VIEWING/UPDATING an existing booking, show ACTUAL assigned vehicles
+                if (dgBookings.SelectedItem is Booking selected)
+                {
+                    var actualVehicles = _bookingBll.GetVehiclesBySchedule(selected.ScheduleId);
+                    if (actualVehicles.Any())
+                    {
+                        var actualNames = actualVehicles.Select(v => $"{v.PlateNumber} ({v.Capacity} seats)");
+                        TbAssignedVehicles.Text = "Currently Assigned: " + string.Join(", ", actualNames);
+                        return;
+                    }
+                }
+
+                // Otherwise (ADD mode), show PREVIEW of what would be assigned
                 var vehicles = _bookingBll.GetAvailableVehicles();
                 if (!vehicles.Any())
                 {
@@ -176,7 +179,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
 
                 if (names.Any())
                 {
-                    TbAssignedVehicles.Text = string.Join(", ", names);
+                    TbAssignedVehicles.Text = "Auto-assign Preview: " + string.Join(", ", names);
                     if (assignedCapacity < num)
                         TbAssignedVehicles.Text += $" (Warning: Not enough capacity! Need {num - assignedCapacity} more)";
                 }
@@ -234,7 +237,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                 MessageBox.Show("Booking created successfully! Redirecting to payment...", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 
                 var mainWindow = Window.GetWindow(this) as MainWindow;
-                //smainWindow?.NavigateToPayment(booking.BookingId);
+                mainWindow?.NavigateToPayment(booking.BookingId);
             }
             catch (Exception ex)
             {
@@ -248,11 +251,9 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             {
                 if (int.TryParse(txtId.Text, out int id))
                 {
-                    string status = (CbStatus.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "Confirmed";
-                    string? reason = status == "Cancelled" ? "User requested cancellation" : null;
-                    
-                    _bookingBll.UpdateBookingStatus(id, status, reason);
-                    MessageBox.Show("Booking updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    string notes = TxtNotes.Text.Trim();
+                    _bookingBll.UpdateBookingInfo(id, notes);
+                    MessageBox.Show("Booking information updated!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                     ClearForm();
                     LoadData();
                 }
@@ -275,7 +276,6 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             CbSchedule.SelectedIndex = -1;
             TxtNumPersons.Text = string.Empty;
             TxtNotes.Text = string.Empty;
-            CbStatus.SelectedIndex = 0;
             TbTotalAmount.Text = "0 VNĐ";
             TbAssignedVehicles.Text = "Auto-assigned on creation";
             UpdateTourDates();

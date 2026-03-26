@@ -18,6 +18,10 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
 
         public void AddBooking(Booking b)
         {
+            // Clear tracking cache to ensure we get fresh data from DB 
+            // and avoid stale vehicle status issues
+            _context.ChangeTracker.Clear();
+
             using (var transaction = _context.Database.BeginTransaction())
             {
                 try
@@ -33,6 +37,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
 
                     // 2. Auto-calculate TotalAmount
                     b.TotalAmount = schedule.TourTemplate.PricePerPerson * b.NumPersons;
+                    b.TourId = schedule.TourTemplateId;
                     
                     // Use provided BookingDate if set (not min value), otherwise use Now
                     if (b.BookingDate == default)
@@ -48,12 +53,40 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                     schedule.UpdatedAt = DateTime.Now;
 
                     // 4. Auto-assign Vehicles (Gap-based Strategy)
+                    // First, check existing vehicles assigned to this schedule
+                    var currentTourVehicles = _context.TourVehicles
+                        .Include(tv => tv.Vehicle)
+                        .Where(tv => tv.ScheduleId == b.ScheduleId)
+                        .ToList();
+
+                    int currentlyAssignedCapacity = currentTourVehicles.Sum(tv => tv.Vehicle.Capacity);
+                    
+                    // We need to know how many people represent ALL bookings for this schedule, 
+                    // not just this one, to see if we need MORE vehicles.
+                    int totalBookedNumPersons = _context.Bookings
+                        .Where(bk => bk.ScheduleId == b.ScheduleId && bk.Status != "Cancelled" && bk.BookingId != b.BookingId)
+                        .Sum(bk => (int?)bk.NumPersons) ?? 0;
+                    
+                    totalBookedNumPersons += b.NumPersons;
+
+                    if (currentlyAssignedCapacity >= totalBookedNumPersons)
+                    {
+                        // Existing vehicles for this tour can handle the new booking
+                        _context.Bookings.Add(b);
+                        _context.SaveChanges();
+                        transaction.Commit();
+                        return;
+                    }
+
+                    // If not enough capacity, pick MORE vehicles
+                    int neededMore = totalBookedNumPersons - currentlyAssignedCapacity;
+
                     var availableVehicles = _context.Vehicles
                         .Where(v => v.Status == "Available")
                         .ToList();
 
                     if (!availableVehicles.Any())
-                        throw new Exception("No available vehicles found!");
+                        throw new Exception($"Need {neededMore} more capacity, but no available vehicles found!");
 
                     int minCap = availableVehicles.Min(v => v.Capacity);
                     int assignedCapacity = 0;
@@ -93,12 +126,12 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                         }
                     }
 
-                    if (assignedCapacity < b.NumPersons)
-                        throw new Exception($"Not enough available capacity. Need: {b.NumPersons}, Available: {assignedCapacity}");
+                    if (assignedCapacity < neededMore)
+                        throw new Exception($"Not enough available capacity. Need: {neededMore}, Available: {assignedCapacity}");
 
                     foreach (var v in toAssign)
                     {
-                        _context.TourVehicles.Add(new TourVehicle { ScheduleId = b.ScheduleId, VehicleId = v.VehicleId });
+                        _context.TourVehicles.Add(new TourVehicle { TourId = schedule.TourTemplateId, ScheduleId = b.ScheduleId, VehicleId = v.VehicleId });
                         v.Status = "Busy";
                     }
 
@@ -129,7 +162,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                         .ToList();
 
                     var completedBookings = bookings
-                        .Where(b => b.BookingDate.AddDays(b.TourSchedule.TourTemplate.DurationDays) < today)
+                        .Where(b => b.TourSchedule.ReturnDate.HasValue && b.TourSchedule.ReturnDate.Value.ToDateTime(TimeOnly.MinValue) < today)
                         .ToList();
 
                     if (completedBookings.Any())
@@ -208,6 +241,17 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
             }
         }
 
+        public void UpdateBookingInfo(int bookingId, string notes)
+        {
+            var b = _context.Bookings.Find(bookingId);
+            if (b != null)
+            {
+                b.Notes = notes;
+                b.UpdatedAt = DateTime.Now;
+                _context.SaveChanges();
+            }
+        }
+
         private void ReleaseVehiclesForTour(int scheduleId, bool completeComponent = true)
         {
             if (completeComponent)
@@ -244,6 +288,15 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
         public List<Vehicle> GetAvailableVehicles()
         {
             return _context.Vehicles.Where(v => v.Status == "Available").ToList();
+        }
+
+        public List<Vehicle> GetVehiclesBySchedule(int scheduleId)
+        {
+            return _context.TourVehicles
+                .Include(tv => tv.Vehicle)
+                .Where(tv => tv.ScheduleId == scheduleId)
+                .Select(tv => tv.Vehicle)
+                .ToList();
         }
     }
 }

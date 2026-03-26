@@ -70,10 +70,17 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
         {
             using (var context = new TravelCompanyDbContext())
             {
+                // Find IDs of bookings that already have a payment record
+                var existingPaymentBookingIds = context.Payments
+                    .Select(p => p.BookingId)
+                    .Distinct()
+                    .ToList();
+
                 return context.Bookings
                     .Include(b => b.Customer)
                     .Include(b => b.TourSchedule).ThenInclude(s => s.TourTemplate)
-                    .Where(b => b.Status == "Confirmed" && !b.IsDeleted)
+                    .Where(b => b.Status == "Confirmed" && !b.IsDeleted 
+                           && !existingPaymentBookingIds.Contains(b.BookingId))
                     .ToList();
             }
         }
