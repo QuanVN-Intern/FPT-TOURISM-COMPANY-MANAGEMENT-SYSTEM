@@ -59,7 +59,7 @@
                     <TextBlock x:Name="TbBookingInfo" Text="Select a booking to see details" FontSize="12" Foreground="#7F8C8D" Margin="0,0,0,10"/>
 
                     <TextBlock Text="Amount (VNĐ)" Margin="0,5,0,2"/>
-                    <TextBox x:Name="TxtAmount" Height="30" Margin="0,0,0,10"/>
+                    <TextBox x:Name="TxtAmount" Height="30" Margin="0,0,0,10" IsReadOnly="True" Background="#F9FAFB"/>
 
                     <TextBlock Text="Payment Method" Margin="0,5,0,2"/>
                     <ComboBox x:Name="CbMethod" Height="30" Margin="0,0,0,10">
@@ -79,7 +79,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Button x:Name="BtnCreate" Grid.Column="0" Content="Register Payment" Height="40" Background="#2ECC71" Foreground="White" FontWeight="Bold" Click="BtnCreate_Click"/>
-                        <Button x:Name="BtnProcess" Grid.Column="2" Content="💸 PAY NOW (FAKE)" Height="40" Background="#E67E22" Foreground="White" FontWeight="Bold" IsEnabled="False" Click="BtnProcess_Click"/>
+                        <Button x:Name="BtnProcess" Grid.Column="2" Content="💸 PAY NOW" Height="40" Background="#E67E22" Foreground="White" FontWeight="Bold" IsEnabled="False" Click="BtnProcess_Click"/>
                     </Grid>
                     
                     <Button x:Name="BtnClear" Content="Clear Form" Height="35" Background="#BDC3C7" Margin="0,15,0,0" Click="BtnClear_Click"/>

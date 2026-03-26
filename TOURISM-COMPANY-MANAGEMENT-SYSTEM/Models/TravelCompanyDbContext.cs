@@ -271,6 +271,11 @@ public partial class TravelCompanyDbContext : DbContext
         {
             entity.HasKey(e => e.Id).HasName("PK__TourVehi__3214EC074B5E385F");
 
+            entity.HasOne(d => d.TourSchedule).WithMany(p => p.TourVehicles)
+                .HasForeignKey(d => d.ScheduleId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TourVehicle_Schedule");
+
             entity.HasOne(d => d.Vehicle).WithMany(p => p.TourVehicles)
                 .HasForeignKey(d => d.VehicleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)

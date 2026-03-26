@@ -74,6 +74,10 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
 
                 BtnProcess.IsEnabled = selected.Status == "Pending";
                 BtnCreate.IsEnabled = false;
+
+                // Lock fields on detail view
+                CbBooking.IsEnabled = false;
+                CbMethod.IsEnabled = false;
             }
         }
 
@@ -154,6 +158,10 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             BtnProcess.IsEnabled = false;
             BtnCreate.IsEnabled = true;
             TbBookingInfo.Text = "Select a booking to see details";
+
+            // Re-enable fields for new entry
+            CbBooking.IsEnabled = true;
+            CbMethod.IsEnabled = true;
         }
     }
 }

@@ -18,7 +18,42 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
 
         public void Update(TourSchedule schedule)
         {
+            // 1. Get current status BEFORE update to detect transition
+            var oldStatus = _context.TourSchedules
+                .AsNoTracking() // Use AsNoTracking to avoid conflict with the update below
+                .Where(s => s.ScheduleId == schedule.ScheduleId)
+                .Select(s => s.Status)
+                .FirstOrDefault();
+
+            // 2. Perform the update
             _context.TourSchedules.Update(schedule);
+
+            // 3. If transitioning to Completed or Cancelled, sync dependencies
+            if (oldStatus != schedule.Status && (schedule.Status == "Completed" || schedule.Status == "Cancelled"))
+            {
+                // Sync Bookings
+                var bookings = _context.Bookings
+                    .Where(b => b.ScheduleId == schedule.ScheduleId && b.Status == "Confirmed")
+                    .ToList();
+
+                foreach (var b in bookings)
+                {
+                    b.Status = schedule.Status; // Completed or Cancelled
+                    b.UpdatedAt = DateTime.Now;
+                }
+
+                // Release Vehicles
+                var tourVehicles = _context.TourVehicles
+                    .Include(tv => tv.Vehicle)
+                    .Where(tv => tv.ScheduleId == schedule.ScheduleId)
+                    .ToList();
+
+                foreach (var tv in tourVehicles)
+                {
+                    tv.Vehicle.Status = "Available";
+                }
+            }
+
             _context.SaveChanges();
         }
 

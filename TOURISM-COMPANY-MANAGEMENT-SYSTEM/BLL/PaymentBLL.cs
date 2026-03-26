@@ -15,6 +15,15 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
 
         public void CreatePayment(Payment p)
         {
+            // Check if payment already exists for this booking
+            var existing = _repo.GetUnpaidBookings();
+            if (!existing.Any(b => b.BookingId == p.BookingId))
+            {
+                // This means the booking is already tagged as having a payment in our filtered GetUnpaidBookings
+                // or it's simply not eligible.
+                throw new Exception("This booking already has a payment registered or is ineligible.");
+            }
+
             p.CreatedAt = DateTime.Now;
             p.UpdatedAt = DateTime.Now;
             p.PaymentDate = DateTime.Now;

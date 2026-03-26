@@ -7,6 +7,8 @@ public partial class TourVehicle
 {
     public int Id { get; set; }
 
+    public int TourId { get; set; }
+
     public int ScheduleId { get; set; }
 
     public int VehicleId { get; set; }
