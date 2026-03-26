@@ -92,7 +92,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             var sql = @"SELECT a.*, r.RoleName
                         FROM   Accounts a
                         JOIN   Roles    r ON a.RoleId = r.RoleId
-                        WHERE  a.IsDeleted = 0 AND r.RoleName = 'Driver'
+                        WHERE  a.IsDeleted = 0 AND UPPER(TRIM(r.RoleName)) = 'DRIVER'
                         ORDER BY a.FullName";
             using var cmd = new SqlCommand(sql, conn);
             using var reader = cmd.ExecuteReader();
@@ -108,7 +108,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             var sql = @"SELECT a.*, r.RoleName
                         FROM   Accounts a
                         JOIN   Roles    r ON a.RoleId = r.RoleId
-                        WHERE  a.IsDeleted = 0 AND r.RoleName = 'Tour Guide'
+                        WHERE  a.IsDeleted = 0 AND UPPER(TRIM(r.RoleName)) = 'TOUR GUIDE'
                         ORDER BY a.FullName";
             using var cmd = new SqlCommand(sql, conn);
             using var reader = cmd.ExecuteReader();
