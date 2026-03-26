@@ -14,13 +14,12 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
 
         // ── Auth ─────────────────────────────────────────────────────────────
 
-        /// <summary>Validates credentials, sets AuthSession.Current, returns true on success.</summary>
         public bool Login(string username, string password)
         {
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
                 return false;
 
-            var hash = HashPassword(password);
+            var hash    = HashPassword(password);
             var account = _repo.Login(username, hash);
             if (account == null) return false;
 
@@ -32,11 +31,28 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
 
         // ── CRUD ─────────────────────────────────────────────────────────────
 
-        public List<Account> GetAll() => _repo.GetAll();
-        public List<Role> GetRoles() => _repo.GetAllRoles();
+        public List<Account> GetAll()   => _repo.GetAll();
+        public List<Role>    GetRoles() => _repo.GetAllRoles();
+
+        /// <summary>
+        /// Returns roles that can be assigned.
+        /// Admin is excluded — only one Admin allowed in the system.
+        /// </summary>
+        public List<Role> GetAssignableRoles()
+        {
+            var all = _repo.GetAllRoles();
+            all.RemoveAll(r => r.RoleName == "Admin");
+            return all;
+        }
 
         public void CreateAccount(Account a, string plainPassword)
         {
+            // New accounts can never be Admin
+            var roles = _repo.GetAllRoles();
+            var selectedRole = roles.Find(r => r.RoleId == a.RoleId);
+            if (selectedRole?.RoleName == "Admin")
+                throw new Exception("Cannot create a new Admin account. There is only one Admin in the system.");
+
             ValidateAccount(a, isEdit: false);
 
             if (string.IsNullOrWhiteSpace(plainPassword) || plainPassword.Length < 6)
@@ -52,7 +68,14 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
             var existing = _repo.GetById(a.AccountId)
                 ?? throw new Exception("Account not found.");
 
-            // Prevent demoting the last admin
+            var roles = _repo.GetAllRoles();
+            var selectedRole = roles.Find(r => r.RoleId == a.RoleId);
+
+            // Cannot promote anyone to Admin
+            if (selectedRole?.RoleName == "Admin" && existing.RoleName != "Admin")
+                throw new Exception("Cannot assign the Admin role to another account. There is only one Admin.");
+
+            // Cannot demote the last Admin
             if (existing.RoleName == "Admin" && a.RoleId != existing.RoleId)
             {
                 int adminCount = _repo.GetAll().FindAll(x => x.RoleName == "Admin" && x.IsActive).Count;
@@ -91,11 +114,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                 ?? throw new Exception("Account not found.");
 
             if (account.RoleName == "Admin")
-            {
-                int adminCount = _repo.GetAll().FindAll(x => x.RoleName == "Admin").Count;
-                if (adminCount <= 1)
-                    throw new Exception("Cannot delete the last Admin account.");
-            }
+                throw new Exception("Cannot delete the Admin account.");
 
             if (account.AccountId == AuthSession.Current?.AccountId)
                 throw new Exception("Cannot delete your own account.");
@@ -115,7 +134,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                     errors.Add("Username is required.");
                 else if (a.Username.Length < 3 || a.Username.Length > 50)
                     errors.Add("Username must be 3–50 characters.");
-                else if (_repo.IsUsernameDuplicate(a.Username, isEdit ? a.AccountId : 0))
+                else if (_repo.IsUsernameDuplicate(a.Username, 0))
                     errors.Add($"Username '{a.Username}' is already taken.");
             }
 
@@ -131,6 +150,18 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
 
             if (a.RoleId <= 0)
                 errors.Add("A role must be selected.");
+
+            // Age validation: employee must be at least 18 years old
+            if (a.DateOfBirth.HasValue)
+            {
+                var today = DateTime.Today;
+                int age   = today.Year - a.DateOfBirth.Value.Year;
+                if (a.DateOfBirth.Value.Date > today.AddYears(-age)) age--;
+                if (a.DateOfBirth.Value > today)
+                    errors.Add("Date of birth cannot be in the future.");
+                else if (age < 18)
+                    errors.Add("Employee must be at least 18 years old.");
+            }
 
             if (errors.Count > 0)
                 throw new Exception("Validation Error(s):\n- " + string.Join("\n- ", errors));
