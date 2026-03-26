@@ -40,7 +40,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
 
         private void BtnAdd_Click(object sender, RoutedEventArgs e)
         {
-            var form = new AccountFormWindow(null, _service.GetRoles());
+            var form = new AccountFormWindow(null);
             if (form.ShowDialog() == true) LoadAccounts();
         }
 
@@ -49,7 +49,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             var selected = GetSelected();
             if (selected == null) return;
 
-            var form = new AccountFormWindow(selected, _service.GetRoles());
+            var form = new AccountFormWindow(selected);
             if (form.ShowDialog() == true) LoadAccounts();
         }
 

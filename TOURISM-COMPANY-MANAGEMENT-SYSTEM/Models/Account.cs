@@ -39,4 +39,8 @@ public partial class Account
     /// <summary>Populated by JOIN in AccountRepository — not a DB column.</summary>
     [NotMapped]
     public string RoleName { get; set; } = string.Empty;
+
+    /// <summary>Not stored in DB — used for UI age validation only.</summary>
+    [NotMapped]
+    public DateTime? DateOfBirth { get; set; }
 }
