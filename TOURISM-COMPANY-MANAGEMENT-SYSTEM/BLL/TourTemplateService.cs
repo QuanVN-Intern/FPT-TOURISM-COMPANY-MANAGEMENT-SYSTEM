@@ -61,6 +61,24 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
             return _repository.GetDestinations();
         }
 
+        public string GenerateNextTourCode()
+        {
+            string? maxCode = _repository.GetMaxTourCode();
+            if (string.IsNullOrEmpty(maxCode) || !maxCode.StartsWith("TOUR"))
+            {
+                return "TOUR001";
+            }
+
+            string numericPart = maxCode.Substring(4);
+            if (int.TryParse(numericPart, out int lastNumber))
+            {
+                int nextNumber = lastNumber + 1;
+                return "TOUR" + nextNumber.ToString("D3");
+            }
+
+            return "TOUR001";
+        }
+
         private void ValidateTemplate(TourTemplate template, bool isUpdate = false)
         {
             var errors = new List<string>();

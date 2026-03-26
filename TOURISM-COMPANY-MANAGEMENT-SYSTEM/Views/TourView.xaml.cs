@@ -23,6 +23,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             
             LoadComboBoxes();
             LoadData(); 
+            ClearForm(); // Initialize with next Tour Code
         }
 
         private void LoadComboBoxes()
@@ -172,7 +173,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             _isClearingForm = true; 
 
             TxtTourId.Text = string.Empty;
-            TxtTourCode.Text = string.Empty;
+            TxtTourCode.Text = _templateService.GenerateNextTourCode();
             TxtTourName.Text = string.Empty;
             CboDestination.SelectedIndex = -1;
             TxtDuration.Text = string.Empty;

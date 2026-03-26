@@ -85,5 +85,13 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
                 .Select(d => new KeyValuePair<int, string>(d.DestinationId, d.Name))
                 .ToList();
         }
+
+        public string? GetMaxTourCode()
+        {
+            return _context.TourTemplates
+                .OrderByDescending(t => t.TourCode)
+                .Select(t => t.TourCode)
+                .FirstOrDefault();
+        }
     }
 }
