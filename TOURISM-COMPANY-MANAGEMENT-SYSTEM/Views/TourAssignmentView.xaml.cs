@@ -40,7 +40,14 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                 var vehicles = _vehicleBll.GetAllVehiclesWithDriver();
                 CbVehiclesForDriver.ItemsSource = vehicles;
                 DgVehicleDrivers.ItemsSource = vehicles;
-                CbDriversForVehicle.ItemsSource = _driverService.GetActiveDrivers();
+                
+                var activeDrivers = _driverService.GetActiveDrivers();
+                CbDriversForVehicle.ItemsSource = activeDrivers;
+                
+                if (activeDrivers.Count == 0)
+                {
+                    MessageBox.Show("No active drivers found. Please add or activate drivers in the 'Manage Drivers' tab.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
             }
             catch (Exception ex)
             {

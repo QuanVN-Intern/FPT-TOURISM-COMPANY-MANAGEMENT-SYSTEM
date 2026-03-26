@@ -33,7 +33,10 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
             // but for simplicity we assume the UI handles this or it's a new account.
             
             if (driver.AccountId <= 0)
+            {
+                driver.IsActive = true;
                 _repo.Add(driver);
+            }
             else
                 _repo.Update(driver);
         }
