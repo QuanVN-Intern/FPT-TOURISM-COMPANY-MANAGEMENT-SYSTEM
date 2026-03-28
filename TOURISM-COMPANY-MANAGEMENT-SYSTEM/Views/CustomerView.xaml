@@ -7,13 +7,25 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Text="Customer Management" FontSize="22"
-                   FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,14"/>
+                   FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,8"/>
 
-        <Grid Grid.Row="1" Margin="0,0,0,12">
+        <!-- Read-only notice for Receptionist / Guide / Driver -->
+        <Border Grid.Row="1" Background="#FFF3CD" BorderBrush="#F59E0B"
+                BorderThickness="1" CornerRadius="4" Padding="10,6"
+                Margin="0,0,0,10">
+            <TextBlock x:Name="TxtReadOnlyNotice"
+                       Text="👁 You have read-only access to this section."
+                       Foreground="#856404" FontSize="12"
+                       Visibility="Collapsed"/>
+        </Border>
+
+        <!-- Toolbar -->
+        <Grid Grid.Row="2" Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -42,7 +54,7 @@
                     BorderThickness="0" Cursor="Hand" Click="BtnDelete_Click"/>
         </Grid>
 
-        <DataGrid x:Name="DgCustomers" Grid.Row="2"
+        <DataGrid x:Name="DgCustomers" Grid.Row="3"
                   AutoGenerateColumns="False" IsReadOnly="True"
                   SelectionMode="Single" GridLinesVisibility="Horizontal"
                   HeadersVisibility="Column" AlternatingRowBackground="#F9F9F9"
