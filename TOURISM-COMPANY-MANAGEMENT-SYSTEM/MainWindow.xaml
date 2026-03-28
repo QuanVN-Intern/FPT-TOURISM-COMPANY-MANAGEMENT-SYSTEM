@@ -14,22 +14,39 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Background="#2C3E50">
+        <Grid Grid.Row="0" Background="#1E293B">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <Button Content="Tours"     Width="130" Margin="15,10,0,10"
-                        Background="#3498DB" Foreground="White" FontWeight="Bold"
-                        BorderThickness="0" Cursor="Hand" Click="BtnOpenTour_Click"/>
-                <Button Content="Customers" Width="130" Margin="8,10,0,10"
-                        Background="#27AE60" Foreground="White" FontWeight="Bold"
-                        BorderThickness="0" Cursor="Hand" Click="BtnOpenCustomer_Click"/>
-                <Button x:Name="BtnOpenAccount" Content="Accounts" Width="130" Margin="8,10,0,10"
-                        Background="#8E44AD" Foreground="White" FontWeight="Bold"
-                        BorderThickness="0" Cursor="Hand" Click="BtnOpenAccount_Click"/>
+                <ComboBox x:Name="CbManagement" Width="126" Margin="8,10,0,10" 
+                          Background="Gray" Foreground="White" FontWeight="Bold"
+                          VerticalContentAlignment="Center" Padding="10,0"
+                          SelectionChanged="CbManagement_SelectionChanged"
+                          Style="{StaticResource {x:Static ToolBar.ComboBoxStyleKey}}" Height="40">
+                    <ComboBoxItem x:Name="CbiPlaceholder" Content="Management" Visibility="Collapsed"/>
+                    <ComboBoxItem x:Name="CbiTours" Content="Tours"/>
+                    <ComboBoxItem x:Name="CbiVehicles" Content="Vehicles"/>
+                    <ComboBoxItem x:Name="CbiCustomers" Content="Customers"/>
+                    <ComboBoxItem x:Name="CbiAccounts" Content="Accounts"/>
+                </ComboBox>
+
+                <Button Content="Bookings" Width="120" Margin="8,10,0,10"
+                        Background="#F59E0B" Foreground="White" FontWeight="Bold"
+                        BorderThickness="0" Cursor="Hand" Click="BtnOpenBooking_Click"/>
+
+                <Button x:Name="BtnOpenAssignment" Content="Assignments" Width="120" Margin="8,10,0,10"
+                        Background="#6366F1" Foreground="White" FontWeight="Bold"
+                        BorderThickness="0" Cursor="Hand" Click="BtnOpenAssignment_Click"/>
+                <Button Content="Payments" Width="120" Margin="8,10,0,10"
+                        Background="#2980B9" Foreground="White" FontWeight="Bold"
+                        BorderThickness="0" Cursor="Hand" Click="BtnOpenPayment_Click"/>
+                <!-- Assignments moved back as requested -->
+                <Button Content="Statistics" Width="120" Margin="8,10,0,10"
+                        Background="#10B981" Foreground="White" FontWeight="Bold"
+                        BorderThickness="0" Cursor="Hand" Click="BtnOpenStatistics_Click"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal"

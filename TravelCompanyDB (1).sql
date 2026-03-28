@@ -6,6 +6,14 @@
 
 USE master;
 GO
+
+ALTER DATABASE TravelCompanyDB
+SET SINGLE_USER
+WITH ROLLBACK IMMEDIATE;
+GO
+
+DROP DATABASE TravelCompanyDB;
+GO
 IF DB_ID('TravelCompanyDB') IS NOT NULL DROP DATABASE TravelCompanyDB;
 CREATE DATABASE TravelCompanyDB;
 GO
@@ -223,6 +231,43 @@ CREATE INDEX IX_Payments_Date    ON Payments(PaymentDate);
     FOREIGN KEY (VehicleId) REFERENCES Vehicles(VehicleId)
 );
 
+ALTER TABLE Accounts ADD LicenseNumber NVARCHAR(50);
+
+CREATE TABLE TourAssignments (
+    AssignmentId INT PRIMARY KEY IDENTITY(1,1),
+    TourId INT NOT NULL,
+    AccountId INT NOT NULL, -- The Driver
+    VehicleId INT NOT NULL,
+    FOREIGN KEY (TourId) REFERENCES Tours(TourId),
+    FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId),
+    FOREIGN KEY (VehicleId) REFERENCES Vehicles(VehicleId),
+    CONSTRAINT UQ_Tour_Driver UNIQUE (TourId, AccountId) -- Prevent duplicate assignment
+);
+
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Accounts') AND name = 'LicenseNumber')
+BEGIN
+    ALTER TABLE Accounts ADD LicenseNumber NVARCHAR(50);
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID('TourAssignments') AND type = 'U')
+BEGIN
+    CREATE TABLE TourAssignments (
+        AssignmentId INT PRIMARY KEY IDENTITY(1,1),
+        TourId INT NOT NULL,
+        AccountId INT NOT NULL, -- The Driver
+        VehicleId INT NOT NULL,
+        FOREIGN KEY (TourId) REFERENCES Tours(TourId),
+        FOREIGN KEY (AccountId) REFERENCES Accounts(AccountId),
+        FOREIGN KEY (VehicleId) REFERENCES Vehicles(VehicleId),
+        CONSTRAINT UQ_Tour_Driver UNIQUE (TourId, AccountId)
+    );
+END
+GO
+
+
 
 
 
@@ -370,3 +415,25 @@ VALUES ('driver_test', @pwd, 'Dave Driver', 'driver_test@travel.com', 4, 1, 0);
 -- Receptionist
 INSERT INTO Accounts (Username, PasswordHash, FullName, Email, RoleId, IsActive, IsDeleted)
 VALUES ('recept_test', @pwd, 'Rachel Recept', 'recept_test@travel.com', 5, 1, 0);
+
+INSERT INTO Vehicles (PlateNumber, Capacity, Status, Notes)
+VALUES
+('29A-12345', 4, 'Available', N'Toyota Vios'),
+
+('30A-67890', 7, 'Available', N'Toyota Innova'),
+
+('30B-22222', 16, 'Available', N'Ford Transit'),
+
+('29B-99999', 29, 'Maintenance', N'Hyundai County'),
+
+('30C-55555', 45, 'Available', N'Hyundai Universe'),
+
+('29D-11111', 7, 'Busy', N'Used for HaLong tour'),
+
+('30E-88888', 16, 'Available', N'New vehicle'),
+
+('29F-77777', 4, 'Available', NULL),
+
+('30G-33333', 29, 'Busy', N'Sapa trip'),
+
+('30H-44444', 45, 'Maintenance', N'Engine repair');

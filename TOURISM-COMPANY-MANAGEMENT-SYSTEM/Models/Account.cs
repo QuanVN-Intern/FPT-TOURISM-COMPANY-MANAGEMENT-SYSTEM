@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -27,11 +27,14 @@ public partial class Account
     public DateTime UpdatedAt { get; set; }
 
     public bool IsDeleted { get; set; }
+    
+    public string? LicenseNumber { get; set; }
 
     // Navigation
     public virtual Role Role { get; set; } = null!;
 
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public virtual ICollection<TourAssignment> TourAssignments { get; set; } = new List<TourAssignment>();
 
     /// <summary>Populated by JOIN in AccountRepository — not a DB column.</summary>
     [NotMapped]

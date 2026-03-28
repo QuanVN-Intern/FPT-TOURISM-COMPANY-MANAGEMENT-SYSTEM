@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
@@ -121,6 +121,47 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
 
             _repo.Delete(accountId);
         }
+
+        // ── Tour Guide helpers ─────────────────────────────────────────────────
+
+        public void AddTourGuide(Account a)
+        {
+            if (string.IsNullOrWhiteSpace(a.FullName))
+                throw new Exception("Full Name is required.");
+            if (string.IsNullOrWhiteSpace(a.Username))
+                throw new Exception("Username is required.");
+            if (_repo.IsUsernameDuplicate(a.Username))
+                throw new Exception($"Username '{a.Username}' is already taken.");
+            if (!string.IsNullOrEmpty(a.Email) && _repo.IsEmailDuplicate(a.Email))
+                throw new Exception("Email is already in use by another account.");
+            if (string.IsNullOrEmpty(a.PasswordHash))
+                throw new Exception("Password is required.");
+
+            int guideRoleId = _repo.GetAllRoles().Find(r => r.RoleName == "Tour Guide")?.RoleId
+                ?? throw new Exception("Role 'Tour Guide' not found in database.");
+            a.RoleId = guideRoleId;
+            a.IsActive = true;
+            _repo.Add(a);
+        }
+
+        public void UpdateTourGuide(Account a)
+        {
+            var existing = _repo.GetById(a.AccountId)
+                ?? throw new Exception("Account not found.");
+            if (string.IsNullOrWhiteSpace(a.FullName))
+                throw new Exception("Full Name is required.");
+            if (_repo.IsUsernameDuplicate(a.Username, a.AccountId))
+                throw new Exception($"Username '{a.Username}' is already taken.");
+            if (!string.IsNullOrEmpty(a.Email) && _repo.IsEmailDuplicate(a.Email, a.AccountId))
+                throw new Exception("Email is already in use by another account.");
+
+            a.RoleId = existing.RoleId; // keep role
+            if (!string.IsNullOrEmpty(a.PasswordHash))
+                _repo.UpdatePassword(a.AccountId, a.PasswordHash);
+            _repo.Update(a);
+        }
+
+        public void SoftDelete(int accountId) => _repo.Delete(accountId);
 
         // ── Validation ────────────────────────────────────────────────────────
 

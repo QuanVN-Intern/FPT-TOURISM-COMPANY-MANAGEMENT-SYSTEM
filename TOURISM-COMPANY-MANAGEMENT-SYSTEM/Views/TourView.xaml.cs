@@ -9,21 +9,21 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
 {
     public partial class TourView : UserControl
     {
-        private readonly TourService _tourService;
+        private readonly TourTemplateService _templateService;
         private readonly List<KeyValuePair<int, string>> _destinations;
         private bool _isClearingForm = false;
 
         public TourView()
         {
             InitializeComponent();
-            _tourService = new TourService();
+            _templateService = new TourTemplateService();
 
-            // Fetch actual destinations from DB if available, otherwise mock
-            var repo = new TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL.TourRepository();
+            var repo = new TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL.TourTemplateRepository();
             _destinations = repo.GetDestinations();
             
             LoadComboBoxes();
             LoadData(); 
+            ClearForm(); // Initialize with next Tour Code
         }
 
         private void LoadComboBoxes()
@@ -45,7 +45,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
         {
             try
             {
-                DataGridTours.ItemsSource = _tourService.GetAllTours();
+                DataGridTours.ItemsSource = _templateService.GetAllTemplates();
             }
             catch (Exception ex)
             {
@@ -57,22 +57,21 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
         {
             if (_isClearingForm) return;
 
-            if (DataGridTours.SelectedItem is Tour selectedTour)
+            if (DataGridTours.SelectedItem is TourTemplate selectedTemplate)
             {
-                TxtTourId.Text = selectedTour.TourId.ToString();
-                TxtTourCode.Text = selectedTour.TourCode;
-                TxtTourName.Text = selectedTour.TourName;
-                CboDestination.SelectedValue = selectedTour.DestinationId;
-                TxtDuration.Text = selectedTour.DurationDays.ToString();
-                TxtPrice.Text = selectedTour.PricePerPerson.ToString("G29"); 
-                TxtMaxCapacity.Text = selectedTour.MaxCapacity.ToString();
-                DpDeparture.SelectedDate = selectedTour.DepartureDate.ToDateTime(TimeOnly.MinValue);
-                SetStatusInCombo(selectedTour.Status);
+                TxtTourId.Text = selectedTemplate.TourTemplateId.ToString();
+                TxtTourCode.Text = selectedTemplate.TourCode;
+                TxtTourName.Text = selectedTemplate.TourName;
+                CboDestination.SelectedValue = selectedTemplate.DestinationId;
+                TxtDuration.Text = selectedTemplate.DurationDays.ToString();
+                TxtPrice.Text = selectedTemplate.PricePerPerson.ToString("G29"); 
+                TxtMaxCapacity.Text = selectedTemplate.MaxCapacity.ToString();
 
                 TxtTourCode.IsEnabled = true;
                 BtnAdd.IsEnabled = true;
                 BtnUpdate.IsEnabled = true;
                 BtnDelete.IsEnabled = true;
+                BtnManageSchedules.IsEnabled = true;
             }
         }
 
@@ -80,10 +79,10 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
         {
             try
             {
-                var newTour = ExtractTourFromForm();
-                _tourService.CreateTour(newTour);
+                var newTemplate = ExtractTemplateFromForm();
+                _templateService.CreateTemplate(newTemplate);
 
-                MessageBox.Show("New Tour added successfully!", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("New Tour Template added successfully!", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
                 ClearForm();
                 LoadData();
             }
@@ -97,29 +96,18 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
         {
             try
             {
-                if (DataGridTours.SelectedItem is not Tour selectedTour) return;
+                if (DataGridTours.SelectedItem is not TourTemplate selectedTemplate) return;
 
-                var tourToUpdate = ExtractTourFromForm();
-                tourToUpdate.TourId = selectedTour.TourId;
-                tourToUpdate.TourCode = selectedTour.TourCode; 
+                var templateToUpdate = ExtractTemplateFromForm();
+                templateToUpdate.TourTemplateId = selectedTemplate.TourTemplateId;
+                templateToUpdate.TourCode = selectedTemplate.TourCode; 
 
-                // Recalculate AvailableSlots if MaxCapacity changed
-                if (tourToUpdate.MaxCapacity != selectedTour.MaxCapacity)
-                {
-                    int booked = _tourService.GetTotalBookedSlots(selectedTour.TourId);
-                    tourToUpdate.AvailableSlots = tourToUpdate.MaxCapacity - booked;
-                }
-                else
-                {
-                    tourToUpdate.AvailableSlots = selectedTour.AvailableSlots;
-                }
+                templateToUpdate.IsDeleted = selectedTemplate.IsDeleted;
+                templateToUpdate.CreatedAt = selectedTemplate.CreatedAt;
 
-                tourToUpdate.IsDeleted = selectedTour.IsDeleted;
-                tourToUpdate.CreatedAt = selectedTour.CreatedAt;
+                _templateService.UpdateTemplate(templateToUpdate);
 
-                _tourService.UpdateTour(tourToUpdate);
-
-                MessageBox.Show("Tour updated successfully!", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Tour Template updated successfully!", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
                 ClearForm();
                 LoadData();
             }
@@ -133,14 +121,14 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
         {
             try
             {
-                if (DataGridTours.SelectedItem is not Tour selectedTour) return;
+                if (DataGridTours.SelectedItem is not TourTemplate selectedTemplate) return;
 
-                var confirm = MessageBox.Show($"Are you sure you want to delete the Tour '{selectedTour.TourName}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                var confirm = MessageBox.Show($"Are you sure you want to delete the Tour Template '{selectedTemplate.TourName}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (confirm == MessageBoxResult.Yes)
                 {
-                    _tourService.DeleteTour(selectedTour.TourId);
+                    _templateService.DeleteTemplate(selectedTemplate.TourTemplateId);
 
-                    MessageBox.Show("Tour deleted successfully (Soft Delete)!", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Tour Template deleted successfully (Soft Delete)!", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
                     ClearForm();
                     LoadData();
                 }
@@ -166,7 +154,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                 decimal? maxPrice = null;
                 if (!string.IsNullOrWhiteSpace(TxtSearchMaxPrice.Text) && decimal.TryParse(TxtSearchMaxPrice.Text, out decimal max)) maxPrice = max;
 
-                DataGridTours.ItemsSource = _tourService.SearchTour(name, destId, minPrice, maxPrice);
+                DataGridTours.ItemsSource = _templateService.SearchTemplates(name, destId, minPrice, maxPrice);
             }
             catch (Exception ex)
             {
@@ -185,14 +173,12 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             _isClearingForm = true; 
 
             TxtTourId.Text = string.Empty;
-            TxtTourCode.Text = string.Empty;
+            TxtTourCode.Text = _templateService.GenerateNextTourCode();
             TxtTourName.Text = string.Empty;
             CboDestination.SelectedIndex = -1;
             TxtDuration.Text = string.Empty;
             TxtPrice.Text = string.Empty;
             TxtMaxCapacity.Text = string.Empty;
-            DpDeparture.SelectedDate = null;
-            SetStatusInCombo("Active");
 
             TxtSearchName.Text = string.Empty;
             CboSearchDestination.SelectedIndex = 0;
@@ -203,61 +189,61 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             BtnAdd.IsEnabled = true;
             BtnUpdate.IsEnabled = false;
             BtnDelete.IsEnabled = false;
+            if (BtnManageSchedules != null) BtnManageSchedules.IsEnabled = false;
             DataGridTours.SelectedItem = null;
 
             _isClearingForm = false;
         }
 
-        private Tour ExtractTourFromForm()
+        private TourTemplate ExtractTemplateFromForm()
         {
-            var tour = new Tour
+            var template = new TourTemplate
             {
                 TourCode = TxtTourCode.Text.Trim(),
                 TourName = TxtTourName.Text.Trim()
             };
 
             if (CboDestination.SelectedValue != null)
-                tour.DestinationId = (int)CboDestination.SelectedValue;
+                template.DestinationId = (int)CboDestination.SelectedValue;
+            else
+                throw new Exception("Please select a Destination.");
 
             if (int.TryParse(TxtDuration.Text, out int dur))
-                tour.DurationDays = dur;
+                template.DurationDays = dur;
+            else
+                throw new Exception("Duration must be a valid integer number.");
 
             if (decimal.TryParse(TxtPrice.Text, out decimal price))
-                tour.PricePerPerson = price;
+                template.PricePerPerson = price;
+            else
+                throw new Exception("Price must be a valid decimal number.");
 
             if (int.TryParse(TxtMaxCapacity.Text, out int maxCap))
-                tour.MaxCapacity = maxCap;
-
-            if (DpDeparture.SelectedDate.HasValue)
-                tour.DepartureDate = DateOnly.FromDateTime(DpDeparture.SelectedDate.Value);
+                template.MaxCapacity = maxCap;
             else
-                tour.DepartureDate = DateOnly.FromDateTime(DateTime.Now);
+                throw new Exception("Max Capacity must be a valid integer number.");
 
-            if (CboStatus.SelectedItem is ComboBoxItem item)
-                tour.Status = item.Content.ToString() ?? "Active";
-            else
-                tour.Status = "Active";
-
-            return tour;
+            return template;
         }
 
-        private void SetStatusInCombo(string status)
-        {
-            foreach (ComboBoxItem item in CboStatus.Items)
-            {
-                if (item.Content.ToString() == status)
-                {
-                    CboStatus.SelectedItem = item;
-                    break;
-                }
-            }
-        }
         private void BtnManageDestinations_Click(object sender, RoutedEventArgs e)
         {
             var mainWindow = Window.GetWindow(this) as MainWindow;
             if (mainWindow != null)
             {
                 mainWindow.MainContent.Content = new DestinationView();
+            }
+        }
+
+        private void BtnManageSchedules_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataGridTours.SelectedItem is TourTemplate selectedTemplate)
+            {
+                var mainWindow = Window.GetWindow(this) as MainWindow;
+                if (mainWindow != null)
+                {
+                    mainWindow.MainContent.Content = new TourScheduleView(selectedTemplate);
+                }
             }
         }
     }
