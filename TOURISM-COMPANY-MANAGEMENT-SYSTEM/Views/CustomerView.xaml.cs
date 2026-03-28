@@ -22,14 +22,21 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
 
         private void ApplyPermissions()
         {
+            // Add / Edit / Delete buttons respect role
             BtnAdd.IsEnabled    = AuthSession.CanAddCustomer;
             BtnEdit.IsEnabled   = AuthSession.CanEditCustomer;
             BtnDelete.IsEnabled = AuthSession.CanDeleteCustomer;
 
-            // Also visually dim disabled buttons so it's obvious
+            // Visually dim disabled buttons
             BtnAdd.Opacity    = BtnAdd.IsEnabled ? 1.0 : 0.4;
             BtnEdit.Opacity   = BtnEdit.IsEnabled ? 1.0 : 0.4;
             BtnDelete.Opacity = BtnDelete.IsEnabled ? 1.0 : 0.4;
+
+            // For Guide: show a read-only label
+            if (AuthSession.IsReadOnlyUser)
+            {
+                TxtReadOnlyNotice.Visibility = Visibility.Visible;
+            }
         }
 
         private void LoadCustomers(string keyword = "")
@@ -40,15 +47,12 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
         }
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            LoadCustomers(TxtSearch.Text.Trim());
-        }
+            => LoadCustomers(TxtSearch.Text.Trim());
 
         private void BtnAdd_Click(object sender, RoutedEventArgs e)
         {
             var form = new CustomerFormWindow(null);
-            if (form.ShowDialog() == true)
-                LoadCustomers();
+            if (form.ShowDialog() == true) LoadCustomers();
         }
 
         private void BtnEdit_Click(object sender, RoutedEventArgs e)
@@ -60,10 +64,8 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                                 MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
-
             var form = new CustomerFormWindow(selected);
-            if (form.ShowDialog() == true)
-                LoadCustomers(TxtSearch.Text.Trim());
+            if (form.ShowDialog() == true) LoadCustomers(TxtSearch.Text.Trim());
         }
 
         private void BtnDelete_Click(object sender, RoutedEventArgs e)
@@ -77,9 +79,8 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             }
 
             var confirm = MessageBox.Show(
-                $"Are you sure you want to delete customer '{selected.FullName}'?\nThis action cannot be undone.",
+                $"Are you sure you want to delete '{selected.FullName}'?",
                 "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
             if (confirm != MessageBoxResult.Yes) return;
 
             try
