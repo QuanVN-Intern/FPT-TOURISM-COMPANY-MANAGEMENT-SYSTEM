@@ -20,7 +20,6 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
                 ?? "Server=localhost\\SQLEXPRESS;database=TravelCompanyDB;uid=sa;pwd=123456;TrustServerCertificate=True;";
         }
 
-        /// <summary>Returns the account (with RoleName) if credentials match, else null.</summary>
         public Account? Login(string username, string passwordHash)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -28,10 +27,10 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             var sql = @"SELECT a.*, r.RoleName
                         FROM   Accounts a
                         JOIN   Roles    r ON a.RoleId = r.RoleId
-                        WHERE  a.Username    = @Username
-                          AND  a.PasswordHash= @PasswordHash
-                          AND  a.IsActive    = 1
-                          AND  a.IsDeleted   = 0";
+                        WHERE  a.Username     = @Username
+                          AND  a.PasswordHash = @PasswordHash
+                          AND  a.IsActive     = 1
+                          AND  a.IsDeleted    = 0";
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Username", username);
             cmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
@@ -73,10 +72,11 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
         {
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
+            // LicenseNumber removed — not a DB column
             var sql = @"INSERT INTO Accounts
-                            (Username, PasswordHash, FullName, Email, RoleId, IsActive, CreatedAt, UpdatedAt, IsDeleted, LicenseNumber)
+                            (Username, PasswordHash, FullName, Email, RoleId, IsActive, CreatedAt, UpdatedAt, IsDeleted)
                         VALUES
-                            (@Username, @PasswordHash, @FullName, @Email, @RoleId, @IsActive, @Created, @Updated, 0, @License)";
+                            (@Username, @PasswordHash, @FullName, @Email, @RoleId, @IsActive, @Created, @Updated, 0)";
             using var cmd = new SqlCommand(sql, conn);
             BindParams(cmd, a);
             cmd.Parameters.AddWithValue("@Created", DateTime.Now);
@@ -84,49 +84,17 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             cmd.ExecuteNonQuery();
         }
 
-        public List<Account> GetAllDrivers()
-        {
-            var list = new List<Account>();
-            using var conn = new SqlConnection(_connectionString);
-            conn.Open();
-            var sql = @"SELECT a.*, r.RoleName
-                        FROM   Accounts a
-                        JOIN   Roles    r ON a.RoleId = r.RoleId
-                        WHERE  a.IsDeleted = 0 AND UPPER(TRIM(r.RoleName)) = 'DRIVER'
-                        ORDER BY a.FullName";
-            using var cmd = new SqlCommand(sql, conn);
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read()) list.Add(MapToAccount(reader));
-            return list;
-        }
-
-        public List<Account> GetTourGuides()
-        {
-            var list = new List<Account>();
-            using var conn = new SqlConnection(_connectionString);
-            conn.Open();
-            var sql = @"SELECT a.*, r.RoleName
-                        FROM   Accounts a
-                        JOIN   Roles    r ON a.RoleId = r.RoleId
-                        WHERE  a.IsDeleted = 0 AND UPPER(TRIM(r.RoleName)) = 'TOUR GUIDE'
-                        ORDER BY a.FullName";
-            using var cmd = new SqlCommand(sql, conn);
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read()) list.Add(MapToAccount(reader));
-            return list;
-        }
-
         public void Update(Account a)
         {
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
+            // LicenseNumber removed — not a DB column
             var sql = @"UPDATE Accounts SET
-                            FullName     = @FullName,
-                            Email        = @Email,
-                            RoleId       = @RoleId,
-                            IsActive     = @IsActive,
-                            LicenseNumber = @License,
-                            UpdatedAt    = @UpdatedAt
+                            FullName  = @FullName,
+                            Email     = @Email,
+                            RoleId    = @RoleId,
+                            IsActive  = @IsActive,
+                            UpdatedAt = @UpdatedAt
                         WHERE AccountId = @Id AND IsDeleted = 0";
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@FullName", a.FullName ?? string.Empty);
@@ -135,7 +103,6 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             cmd.Parameters.AddWithValue("@IsActive", a.IsActive);
             cmd.Parameters.AddWithValue("@UpdatedAt", DateTime.Now);
             cmd.Parameters.AddWithValue("@Id", a.AccountId);
-            cmd.Parameters.AddWithValue("@License", a.LicenseNumber ?? (object)DBNull.Value);
             cmd.ExecuteNonQuery();
         }
 
@@ -174,6 +141,38 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             cmd.ExecuteNonQuery();
         }
 
+        public List<Account> GetAllDrivers()
+        {
+            var list = new List<Account>();
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
+            var sql = @"SELECT a.*, r.RoleName
+                        FROM   Accounts a
+                        JOIN   Roles    r ON a.RoleId = r.RoleId
+                        WHERE  a.IsDeleted = 0 AND UPPER(TRIM(r.RoleName)) = 'DRIVER'
+                        ORDER BY a.FullName";
+            using var cmd = new SqlCommand(sql, conn);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read()) list.Add(MapToAccount(reader));
+            return list;
+        }
+
+        public List<Account> GetTourGuides()
+        {
+            var list = new List<Account>();
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
+            var sql = @"SELECT a.*, r.RoleName
+                        FROM   Accounts a
+                        JOIN   Roles    r ON a.RoleId = r.RoleId
+                        WHERE  a.IsDeleted = 0 AND UPPER(TRIM(r.RoleName)) = 'GUIDE'
+                        ORDER BY a.FullName";
+            using var cmd = new SqlCommand(sql, conn);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read()) list.Add(MapToAccount(reader));
+            return list;
+        }
+
         public bool IsUsernameDuplicate(string username, int excludeId = 0)
         {
             using var conn = new SqlConnection(_connectionString);
@@ -205,11 +204,16 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             using var cmd = new SqlCommand(sql, conn);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
-                list.Add(new Role { RoleId = (int)reader["RoleId"], RoleName = reader["RoleName"].ToString() ?? "" });
+                list.Add(new Role
+                {
+                    RoleId   = (int)reader["RoleId"],
+                    RoleName = reader["RoleName"].ToString() ?? ""
+                });
             return list;
         }
 
-        // ── helpers ──────────────────────────────────────────────────────────
+        // ── helpers ───────────────────────────────────────────────────────────
+
         private static void BindParams(SqlCommand cmd, Account a)
         {
             cmd.Parameters.AddWithValue("@Username", a.Username     ?? string.Empty);
@@ -218,7 +222,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             cmd.Parameters.AddWithValue("@Email", a.Email        ?? string.Empty);
             cmd.Parameters.AddWithValue("@RoleId", a.RoleId);
             cmd.Parameters.AddWithValue("@IsActive", a.IsActive);
-            cmd.Parameters.AddWithValue("@License", a.LicenseNumber ?? (object)DBNull.Value);
+            // LicenseNumber intentionally excluded — not a DB column
         }
 
         private static Account MapToAccount(SqlDataReader r) => new Account
@@ -232,7 +236,7 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.DAL
             RoleName     = r["RoleName"].ToString()     ?? "",
             IsActive     = (bool)r["IsActive"],
             IsDeleted    = (bool)r["IsDeleted"],
-            LicenseNumber = r["LicenseNumber"] == DBNull.Value ? null : r["LicenseNumber"].ToString()
+            LicenseNumber = null   // not a DB column — always null from DB
         };
     }
 }
