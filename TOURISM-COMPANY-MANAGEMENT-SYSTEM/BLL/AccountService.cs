@@ -12,14 +12,14 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
     {
         private readonly AccountRepository _repo = new AccountRepository();
 
-        // ── Auth ─────────────────────────────────────────────────────────────
+        // ── Auth ──────────────────────────────────────────────────────────────
 
         public bool Login(string username, string password)
         {
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
                 return false;
 
-            var hash    = HashPassword(password);
+            var hash = HashPassword(password);
             var account = _repo.Login(username, hash);
             if (account == null) return false;
 
@@ -29,29 +29,32 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
 
         public void Logout() => AuthSession.Clear();
 
-        // ── CRUD ─────────────────────────────────────────────────────────────
+        // ── CRUD ──────────────────────────────────────────────────────────────
 
-        public List<Account> GetAll()   => _repo.GetAll();
-        public List<Role>    GetRoles() => _repo.GetAllRoles();
+        public List<Account> GetAll() => _repo.GetAll();
+        public List<Role> GetRoles() => _repo.GetAllRoles();
 
         /// <summary>
-        /// Returns roles that can be assigned.
-        /// Admin is excluded — only one Admin allowed in the system.
+        /// Roles that can be assigned to accounts.
+        /// Admin is excluded (only one Admin allowed).
+        /// Staff is excluded (role removed from system).
         /// </summary>
         public List<Role> GetAssignableRoles()
         {
             var all = _repo.GetAllRoles();
-            all.RemoveAll(r => r.RoleName == "Admin");
+            all.RemoveAll(r => r.RoleName == "Admin" || r.RoleName == "Staff");
             return all;
         }
 
         public void CreateAccount(Account a, string plainPassword)
         {
-            // New accounts can never be Admin
+            // Block creating Admin or Staff accounts
             var roles = _repo.GetAllRoles();
             var selectedRole = roles.Find(r => r.RoleId == a.RoleId);
             if (selectedRole?.RoleName == "Admin")
-                throw new Exception("Cannot create a new Admin account. There is only one Admin in the system.");
+                throw new Exception("Cannot create a new Admin account. There is only one Admin.");
+            if (selectedRole?.RoleName == "Staff")
+                throw new Exception("The Staff role has been removed from the system.");
 
             ValidateAccount(a, isEdit: false);
 
@@ -73,7 +76,11 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
 
             // Cannot promote anyone to Admin
             if (selectedRole?.RoleName == "Admin" && existing.RoleName != "Admin")
-                throw new Exception("Cannot assign the Admin role to another account. There is only one Admin.");
+                throw new Exception("Cannot assign the Admin role to another account.");
+
+            // Cannot assign Staff role
+            if (selectedRole?.RoleName == "Staff")
+                throw new Exception("The Staff role has been removed from the system.");
 
             // Cannot demote the last Admin
             if (existing.RoleName == "Admin" && a.RoleId != existing.RoleId)
@@ -122,47 +129,6 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
             _repo.Delete(accountId);
         }
 
-        // ── Tour Guide helpers ─────────────────────────────────────────────────
-
-        public void AddTourGuide(Account a)
-        {
-            if (string.IsNullOrWhiteSpace(a.FullName))
-                throw new Exception("Full Name is required.");
-            if (string.IsNullOrWhiteSpace(a.Username))
-                throw new Exception("Username is required.");
-            if (_repo.IsUsernameDuplicate(a.Username))
-                throw new Exception($"Username '{a.Username}' is already taken.");
-            if (!string.IsNullOrEmpty(a.Email) && _repo.IsEmailDuplicate(a.Email))
-                throw new Exception("Email is already in use by another account.");
-            if (string.IsNullOrEmpty(a.PasswordHash))
-                throw new Exception("Password is required.");
-
-            int guideRoleId = _repo.GetAllRoles().Find(r => r.RoleName == "Tour Guide")?.RoleId
-                ?? throw new Exception("Role 'Tour Guide' not found in database.");
-            a.RoleId = guideRoleId;
-            a.IsActive = true;
-            _repo.Add(a);
-        }
-
-        public void UpdateTourGuide(Account a)
-        {
-            var existing = _repo.GetById(a.AccountId)
-                ?? throw new Exception("Account not found.");
-            if (string.IsNullOrWhiteSpace(a.FullName))
-                throw new Exception("Full Name is required.");
-            if (_repo.IsUsernameDuplicate(a.Username, a.AccountId))
-                throw new Exception($"Username '{a.Username}' is already taken.");
-            if (!string.IsNullOrEmpty(a.Email) && _repo.IsEmailDuplicate(a.Email, a.AccountId))
-                throw new Exception("Email is already in use by another account.");
-
-            a.RoleId = existing.RoleId; // keep role
-            if (!string.IsNullOrEmpty(a.PasswordHash))
-                _repo.UpdatePassword(a.AccountId, a.PasswordHash);
-            _repo.Update(a);
-        }
-
-        public void SoftDelete(int accountId) => _repo.Delete(accountId);
-
         // ── Validation ────────────────────────────────────────────────────────
 
         private void ValidateAccount(Account a, bool isEdit)
@@ -192,11 +158,11 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
             if (a.RoleId <= 0)
                 errors.Add("A role must be selected.");
 
-            // Age validation: employee must be at least 18 years old
+            // Age validation: employee must be at least 18
             if (a.DateOfBirth.HasValue)
             {
                 var today = DateTime.Today;
-                int age   = today.Year - a.DateOfBirth.Value.Year;
+                int age = today.Year - a.DateOfBirth.Value.Year;
                 if (a.DateOfBirth.Value.Date > today.AddYears(-age)) age--;
                 if (a.DateOfBirth.Value > today)
                     errors.Add("Date of birth cannot be in the future.");
