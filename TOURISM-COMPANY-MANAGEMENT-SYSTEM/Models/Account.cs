@@ -7,32 +7,19 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Models;
 public partial class Account
 {
     public int AccountId { get; set; }
-
     public string Username { get; set; } = null!;
-
     public string PasswordHash { get; set; } = null!;
-
     public string FullName { get; set; } = null!;
-
     public string Email { get; set; } = null!;
-
     public int RoleId { get; set; }
-
     public bool IsActive { get; set; }
-
     public DateTime? LastLoginAt { get; set; }
-
     public DateTime CreatedAt { get; set; }
-
     public DateTime UpdatedAt { get; set; }
-
     public bool IsDeleted { get; set; }
-    
-    public string? LicenseNumber { get; set; }
 
     // Navigation
     public virtual Role Role { get; set; } = null!;
-
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     public virtual ICollection<TourAssignment> TourAssignments { get; set; } = new List<TourAssignment>();
 
@@ -43,4 +30,8 @@ public partial class Account
     /// <summary>Not stored in DB — used for UI age validation only.</summary>
     [NotMapped]
     public DateTime? DateOfBirth { get; set; }
+
+    /// <summary>Not stored in DB — display only in DriverManagerView.</summary>
+    [NotMapped]
+    public string? LicenseNumber { get; set; }
 }

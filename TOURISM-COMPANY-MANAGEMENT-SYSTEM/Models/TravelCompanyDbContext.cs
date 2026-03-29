@@ -18,38 +18,30 @@ public partial class TravelCompanyDbContext : DbContext
     }
 
     public virtual DbSet<Account> Accounts { get; set; }
-
     public virtual DbSet<Booking> Bookings { get; set; }
-
     public virtual DbSet<Customer> Customers { get; set; }
-
     public virtual DbSet<Destination> Destinations { get; set; }
-
     public virtual DbSet<Payment> Payments { get; set; }
-
     public virtual DbSet<Permission> Permissions { get; set; }
-
     public virtual DbSet<Role> Roles { get; set; }
-
     public virtual DbSet<TourTemplate> TourTemplates { get; set; }
     public virtual DbSet<TourSchedule> TourSchedules { get; set; }
-
     public virtual DbSet<Vehicle> Vehicles { get; set; }
     public virtual DbSet<TourVehicle> TourVehicles { get; set; }
     public virtual DbSet<TourAssignment> TourAssignments { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlServer(GetConnectionString());
     }
-    private String GetConnectionString()
+
+    private string GetConnectionString()
     {
         IConfiguration config = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", true, true)
             .Build();
-        var strConn = config["ConnectionStrings:DefaultConnectionString"];
-
-        return strConn;
+        return config["ConnectionStrings:DefaultConnectionString"] ?? "";
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -59,11 +51,8 @@ public partial class TravelCompanyDbContext : DbContext
             entity.HasKey(e => e.AccountId).HasName("PK__Accounts__349DA5A61368F4C0");
 
             entity.HasIndex(e => e.Email, "IX_Accounts_Email");
-
             entity.HasIndex(e => e.RoleId, "IX_Accounts_RoleId");
-
             entity.HasIndex(e => e.Username, "UQ__Accounts__536C85E468F37E8B").IsUnique();
-
             entity.HasIndex(e => e.Email, "UQ__Accounts__A9D1053465BD69E8").IsUnique();
 
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
@@ -73,6 +62,11 @@ public partial class TravelCompanyDbContext : DbContext
             entity.Property(e => e.PasswordHash).HasMaxLength(256);
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.Username).HasMaxLength(50);
+
+            // Tell EF Core to ignore these — they are not DB columns
+            entity.Ignore(e => e.RoleName);
+            entity.Ignore(e => e.DateOfBirth);
+            entity.Ignore(e => e.LicenseNumber);
 
             entity.HasOne(d => d.Role).WithMany(p => p.Accounts)
                 .HasForeignKey(d => d.RoleId)
@@ -85,13 +79,9 @@ public partial class TravelCompanyDbContext : DbContext
             entity.HasKey(e => e.BookingId).HasName("PK__Bookings__73951AED109AE5C6");
 
             entity.HasIndex(e => e.CustomerId, "IX_Bookings_Customer");
-
             entity.HasIndex(e => e.BookingDate, "IX_Bookings_Date");
-
             entity.HasIndex(e => e.Status, "IX_Bookings_Status");
-
             entity.HasIndex(e => e.ScheduleId, "IX_Bookings_Schedule");
-
             entity.HasIndex(e => e.BookingCode, "UQ__Bookings__C6E56BD54FBD8E8F").IsUnique();
 
             entity.Property(e => e.BookingCode)
@@ -128,9 +118,7 @@ public partial class TravelCompanyDbContext : DbContext
             entity.HasKey(e => e.CustomerId).HasName("PK__Customer__A4AE64D84D62506D");
 
             entity.HasIndex(e => e.FullName, "IX_Customers_FullName");
-
             entity.HasIndex(e => e.Phone, "IX_Customers_Phone");
-
             entity.HasIndex(e => e.Phone, "UQ__Customer__5C7E359E4F8A31DB").IsUnique();
 
             entity.Property(e => e.Address).HasMaxLength(500);
@@ -162,9 +150,7 @@ public partial class TravelCompanyDbContext : DbContext
             entity.HasKey(e => e.PaymentId).HasName("PK__Payments__9B556A3811EA2695");
 
             entity.HasIndex(e => e.BookingId, "IX_Payments_Booking");
-
             entity.HasIndex(e => e.PaymentDate, "IX_Payments_Date");
-
             entity.HasIndex(e => e.Status, "IX_Payments_Status");
 
             entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
@@ -191,7 +177,6 @@ public partial class TravelCompanyDbContext : DbContext
             entity.HasKey(e => e.PermissionId).HasName("PK__Permissi__EFA6FB2F3A1F26D1");
 
             entity.HasIndex(e => new { e.Module, e.Action }, "UQ_Perm_Module_Action").IsUnique();
-
             entity.HasIndex(e => e.PermissionName, "UQ__Permissi__0FFDA35747DB80E1").IsUnique();
 
             entity.Property(e => e.Action).HasMaxLength(50);
@@ -285,7 +270,7 @@ public partial class TravelCompanyDbContext : DbContext
         modelBuilder.Entity<TourAssignment>(entity =>
         {
             entity.HasKey(e => e.AssignmentId).HasName("PK_TourAssignments");
-            
+
             entity.HasOne(d => d.TourSchedule).WithMany(p => p.TourAssignments)
                 .HasForeignKey(d => d.ScheduleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
