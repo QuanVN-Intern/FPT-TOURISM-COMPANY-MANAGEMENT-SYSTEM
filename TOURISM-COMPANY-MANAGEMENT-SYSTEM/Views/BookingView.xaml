@@ -99,11 +99,8 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Button x:Name="BtnAdd" Grid.Column="0" Content="Create Booking" Height="40" Background="#2ECC71" Foreground="White" FontWeight="Bold" Click="BtnAdd_Click"/>
-                        <Button x:Name="BtnUpdate" Grid.Column="2" Content="Update Info" Height="40" Background="#F1C40F" Foreground="Black" FontWeight="Bold" IsEnabled="False" Click="BtnUpdate_Click"/>
                     </Grid>
                     
                     <Button x:Name="BtnClear" Content="Clear Form" Height="35" Background="#BDC3C7" Margin="0,10,0,0" Click="BtnClear_Click"/>

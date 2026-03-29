@@ -241,16 +241,6 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
             }
         }
 
-        public void UpdateBookingInfo(int bookingId, string notes)
-        {
-            var b = _context.Bookings.Find(bookingId);
-            if (b != null)
-            {
-                b.Notes = notes;
-                b.UpdatedAt = DateTime.Now;
-                _context.SaveChanges();
-            }
-        }
 
         private void ReleaseVehiclesForTour(int scheduleId, bool completeComponent = true)
         {
