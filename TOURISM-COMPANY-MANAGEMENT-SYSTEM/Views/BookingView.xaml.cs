@@ -74,14 +74,13 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
                 
                 // Status selection logic removed as CbStatus is hidden
 
-                BtnUpdate.IsEnabled = true;
                 BtnAdd.IsEnabled = false;
 
-                // Disable fields during update - Status only allowed
+                // Disable fields during view
                 CbCustomer.IsEnabled = false;
                 CbSchedule.IsEnabled = false;
                 TxtNumPersons.IsEnabled = false;
-                TxtNotes.IsEnabled = true; // Still allow note updates
+                TxtNotes.IsEnabled = false;
             }
         }
 
@@ -241,28 +240,16 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                string msg = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    msg += "\nDetails: " + ex.InnerException.Message;
+                }
+                MessageBox.Show($"Error: {msg}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void BtnUpdate_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (int.TryParse(txtId.Text, out int id))
-                {
-                    string notes = TxtNotes.Text.Trim();
-                    _bookingBll.UpdateBookingInfo(id, notes);
-                    MessageBox.Show("Booking information updated!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                    ClearForm();
-                    LoadData();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
+
 
         private void BtnClear_Click(object sender, RoutedEventArgs e)
         {
@@ -280,7 +267,6 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             TbAssignedVehicles.Text = "Auto-assigned on creation";
             UpdateTourDates();
             
-            BtnUpdate.IsEnabled = false;
             BtnAdd.IsEnabled = true;
             dgBookings.SelectedItem = null;
 
