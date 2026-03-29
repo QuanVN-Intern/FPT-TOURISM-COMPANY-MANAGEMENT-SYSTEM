@@ -51,36 +51,36 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM
 
         /// <summary>
         /// Show/hide every nav element based on the logged-in role.
-        /// Roles: Admin | Manager | Staff | Guide | Driver
+        /// Roles: Admin | Manager | Staff | Receptionist | Tour Guide | Driver
         /// </summary>
         private void ApplyRoleVisibility()
         {
             // ── Management ComboBox (entire control) ──────────────────────────
-            // Hide completely for Driver and Tour Guide — they have no items to see
-            // Admin  Manager  Staff  Tour Guide  Driver
-            //   yes    yes     yes      no         no
+            // Admin  Manager  Staff  Receptionist  Tour Guide  Driver
+            //  yes    yes      yes      yes           no         no
             CbManagement.Visibility = (AuthSession.IsDriver || IsTourGuide())
                 ? Visibility.Collapsed : Visibility.Visible;
 
             // ── Management ComboBox items ─────────────────────────────────────
-            // Admin  Manager  Staff  Tour Guide  Driver
-            CbiTours.Visibility     = Visibility.Visible;                          // yes    yes     yes    yes        yes
-            CbiVehicles.Visibility  = AuthSession.CanSeeVehicles                   // yes    yes     yes    no         no
+            // Admin  Manager  Staff  Receptionist  Tour Guide  Driver
+            CbiTours.Visibility     = Visibility.Visible;                          //  yes    yes      yes    yes           yes         yes
+            CbiVehicles.Visibility  = AuthSession.CanSeeVehicles                   //  yes    yes      no     no            no          no
                 ? Visibility.Visible : Visibility.Collapsed;
-            CbiCustomers.Visibility = AuthSession.CanSeeCustomers                  // yes    yes     yes    no         no
+            CbiCustomers.Visibility = AuthSession.CanSeeCustomers                  //  yes    yes      no     yes           no          no
                 ? Visibility.Visible : Visibility.Collapsed;
-            CbiAccounts.Visibility  = AuthSession.CanSeeAccounts                   // yes    no      no     no         no
+            CbiAccounts.Visibility  = AuthSession.CanSeeAccounts                   //  yes    no       no     no            no          no
                 ? Visibility.Visible : Visibility.Collapsed;
 
             // ── Top-level nav buttons ─────────────────────────────────────────
-            // Admin  Manager  Staff  Tour Guide  Driver
-            BtnOpenBooking.Visibility    = AuthSession.CanSeeBookings              // yes    yes     yes    no         no
+            // Admin  Manager  Staff  Receptionist  Tour Guide  Driver
+            BtnOpenBooking.Visibility    = AuthSession.CanSeeBookings              //  yes    yes      yes    yes           no          no
                 ? Visibility.Visible : Visibility.Collapsed;
-            BtnOpenAssignment.Visibility = AuthSession.CanSeeAssignments           // yes    yes     yes    yes        yes
+            BtnOpenAssignment.Visibility = AuthSession.CanSeeAssignments           //  yes    yes      yes    yes           yes         yes
                 ? Visibility.Visible : Visibility.Collapsed;
-            BtnOpenPayment.Visibility    = AuthSession.CanSeePayments              // yes    yes     yes    no         no
+            BtnOpenPayment.Visibility    = (AuthSession.CanSeePayments             //  yes    yes      no     yes           no          no
+                || AuthSession.IsReceptionist)
                 ? Visibility.Visible : Visibility.Collapsed;
-            BtnOpenStatistics.Visibility = AuthSession.CanSeeStatistics            // yes    yes     no     no         no
+            BtnOpenStatistics.Visibility = AuthSession.CanSeeStatistics            //  yes    yes      no     no            no          no
                 ? Visibility.Visible : Visibility.Collapsed;
         }
 
