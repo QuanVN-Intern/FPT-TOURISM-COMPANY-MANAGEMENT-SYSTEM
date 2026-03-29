@@ -47,11 +47,11 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
 
         // ── Nav bar: Management ComboBox items ────────────────────────────────
         // Tours: everyone
-        public static bool CanSeeTours => true;
+        public static bool CanSeeTours => !IsDriver && !IsGuide;
         // Vehicles: Admin, Manager only (no Staff anymore)
         public static bool CanSeeVehicles => IsAdminOrManager;
         // Customers: not Driver
-        public static bool CanSeeCustomers => CanViewCustomer;
+        public static bool CanSeeCustomers => IsAdmin || IsManager || IsReceptionist;
         // Accounts: Admin only
         public static bool CanSeeAccounts => IsAdmin;
 
