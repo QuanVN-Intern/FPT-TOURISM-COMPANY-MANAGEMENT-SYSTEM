@@ -36,12 +36,21 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                         throw new Exception($"Not enough slots available. Remaining: {schedule.AvailableSlots}");
 
                     // 2. Auto-calculate TotalAmount
-                    b.TotalAmount = schedule.TourTemplate.PricePerPerson * b.NumPersons;
-                    b.TourId = schedule.TourTemplateId;
+                    b.TotalAmount = (schedule.TourTemplate?.PricePerPerson ?? 0) * b.NumPersons;
                     
+                    b.TourId = schedule.TourTemplateId;
+                    if (b.TourId == 0) throw new Exception("Internal Error: TourTemplateId is 0. Please check tour configuration.");
+
                     // Use provided BookingDate if set (not min value), otherwise use Now
                     if (b.BookingDate == default)
                         b.BookingDate = DateTime.Now;
+
+                    // Ensure AccountId is valid (fallback to first available if none logged in)
+                    if (b.AccountId <= 0)
+                    {
+                        var firstAccount = _context.Accounts.FirstOrDefault();
+                        b.AccountId = firstAccount?.AccountId ?? 1;
+                    }
 
                     b.CreatedAt = DateTime.Now;
                     b.UpdatedAt = DateTime.Now;
@@ -53,7 +62,6 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                     schedule.UpdatedAt = DateTime.Now;
 
                     // 4. Auto-assign Vehicles (Gap-based Strategy)
-                    // First, check existing vehicles assigned to this schedule
                     var currentTourVehicles = _context.TourVehicles
                         .Include(tv => tv.Vehicle)
                         .Where(tv => tv.ScheduleId == b.ScheduleId)
@@ -61,40 +69,32 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
 
                     int currentlyAssignedCapacity = currentTourVehicles.Sum(tv => tv.Vehicle.Capacity);
                     
-                    // We need to know how many people represent ALL bookings for this schedule, 
-                    // not just this one, to see if we need MORE vehicles.
                     int totalBookedNumPersons = _context.Bookings
-                        .Where(bk => bk.ScheduleId == b.ScheduleId && bk.Status != "Cancelled" && bk.BookingId != b.BookingId)
+                        .Where(bk => bk.ScheduleId == b.ScheduleId && bk.Status != "Cancelled")
                         .Sum(bk => (int?)bk.NumPersons) ?? 0;
                     
                     totalBookedNumPersons += b.NumPersons;
 
                     if (currentlyAssignedCapacity >= totalBookedNumPersons)
                     {
-                        // Existing vehicles for this tour can handle the new booking
                         _context.Bookings.Add(b);
                         _context.SaveChanges();
                         transaction.Commit();
                         return;
                     }
 
-                    // If not enough capacity, pick MORE vehicles
                     int neededMore = totalBookedNumPersons - currentlyAssignedCapacity;
-
-                    var availableVehicles = _context.Vehicles
-                        .Where(v => v.Status == "Available")
-                        .ToList();
+                    var availableVehicles = _context.Vehicles.Where(v => v.Status == "Available").ToList();
 
                     if (!availableVehicles.Any())
                         throw new Exception($"Need {neededMore} more capacity, but no available vehicles found!");
 
                     int minCap = availableVehicles.Min(v => v.Capacity);
-                    int assignedCapacity = 0;
                     var toAssign = new List<Vehicle>();
+                    int assignedCapacity = 0;
 
-                    // Step 1: Best Single Fit (Gap <= minCap)
                     var bestSingle = availableVehicles
-                        .Where(v => v.Capacity >= b.NumPersons && (v.Capacity - b.NumPersons) <= minCap)
+                        .Where(v => v.Capacity >= neededMore && (v.Capacity - neededMore) <= minCap)
                         .OrderBy(v => v.Capacity)
                         .FirstOrDefault();
 
@@ -105,20 +105,11 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
                     }
                     else
                     {
-                        // Step 2: Multiple Selection (Minimize waste)
                         var tempAvailable = availableVehicles.OrderByDescending(v => v.Capacity).ToList();
-                        int remaining = b.NumPersons;
-                        
+                        int remaining = neededMore;
                         while (remaining > 0 && tempAvailable.Any())
                         {
-                            // Pick largest that is <= remaining
-                            var v = tempAvailable.FirstOrDefault(x => x.Capacity <= remaining);
-                            if (v == null)
-                            {
-                                // If none <= remaining, pick smallest to cover the rest
-                                v = tempAvailable.OrderBy(x => x.Capacity).First();
-                            }
-                            
+                            var v = tempAvailable.FirstOrDefault(x => x.Capacity <= remaining) ?? tempAvailable.First();
                             toAssign.Add(v);
                             assignedCapacity += v.Capacity;
                             remaining -= v.Capacity;
@@ -131,7 +122,11 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.BLL
 
                     foreach (var v in toAssign)
                     {
-                        _context.TourVehicles.Add(new TourVehicle { TourId = schedule.TourTemplateId, ScheduleId = b.ScheduleId, VehicleId = v.VehicleId });
+                        _context.TourVehicles.Add(new TourVehicle { 
+                            TourId = b.TourId, // Use the SAME TourId as booking
+                            ScheduleId = b.ScheduleId, 
+                            VehicleId = v.VehicleId 
+                        });
                         v.Status = "Busy";
                     }
 

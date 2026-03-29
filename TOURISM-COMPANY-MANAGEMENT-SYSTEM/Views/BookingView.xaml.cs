@@ -240,7 +240,12 @@ namespace TOURISM_COMPANY_MANAGEMENT_SYSTEM.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                string msg = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    msg += "\nDetails: " + ex.InnerException.Message;
+                }
+                MessageBox.Show($"Error: {msg}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
